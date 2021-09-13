@@ -11,7 +11,6 @@ exchangeList = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance()]
 
 plotList = list()
 plotList1 = list()
-plotList3 = list()
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
 # returns avg_diffs, a list of the expected differences in price between the first exchange and each other exchange

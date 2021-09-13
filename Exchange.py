@@ -3,6 +3,7 @@ import json
 import robin_stocks.robinhood as r
 
 
+# Class which handles exchanges
 class ExchangeInterface:
     """Interface implemented by the Exchange class"""
 
