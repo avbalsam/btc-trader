@@ -68,7 +68,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
         # ask_list.sort()
         ask_list.append(mean(ask_list[1:]))
         bid_list.append(mean(bid_list[1:]))
-        print(bid_list)
+        #print(bid_list)
         ask_lists.append(ask_list)
         bid_lists.append(bid_list)
 
@@ -78,7 +78,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
             diff_lists[i].append(bids_over_time[0][-1] - bids_over_time[i][-1])
             avg_diffs[i] = mean(diff_lists[i])
             mean_diff[i].append(diff_lists[i][-1] - avg_diffs[i])
-        print(avg_diffs)
+        #print(avg_diffs)
 
         last_price = bids_over_time[0][-2]
         current_price = bids_over_time[0][-1]
@@ -114,12 +114,12 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
             investing = True
             buy_price = exchange_list[0].get_bid()
             print("Buy price: " + str(buy_price))
-        print("Discrepancy count: " + str(buy_disc_count))
-        print([diff[-1] for diff in mean_diff])
-        print("Robinhood price change: " + str(
-            (current_price - last_price) / current_price * 100) + "%. Robinhood price: " +
-              str(current_price))
-        print("\n")
+        #print("Discrepancy count: " + str(buy_disc_count))
+        #print([diff[-1] for diff in mean_diff])
+        #print("Robinhood price change: " + str(
+        #    (current_price - last_price) / current_price * 100) + "%. Robinhood price: " +
+        #      str(current_price))
+        #print("\n")
     print("Investment period concluded. A total of " + str(transaction_count) + " transactions were conducted.")
     print("With transaction fees of 0.075%, total profit was " + str(total_percent_gain) +
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
