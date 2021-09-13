@@ -11,7 +11,7 @@ exchangeList = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance()]
 
 plotList = list()
 plotList1 = list()
-
+plotList3 = list()
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
 # returns avg_diffs, a list of the expected differences in price between the first exchange and each other exchange
@@ -100,17 +100,19 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
                 print("Sell price: " + str(sell_price))
                 print("Buy price: " + str(buy_price))
                 percent_gain_no_fees = (sell_price - buy_price) / buy_price * 100
-                buy_price = buy_price + buy_price * .00075
-                sell_price = sell_price - sell_price * .00075
+                #buy_price = buy_price + buy_price * .00075
+                #sell_price = sell_price - sell_price * .00075
                 percent_gain = (sell_price - buy_price) / buy_price * 100
                 print("Total profit: " + str(percent_gain) + "%")
                 total_percent_gain += percent_gain
                 total_percent_gain_no_fees += percent_gain_no_fees
+                #r.sell_crypto_by_price("BTC", 1 + percent_gain_no_fees / 100)
                 investing = False
                 buy_price = None
                 transaction_count += 1
         elif buy_disc_count >= 2 or mean_diff[-1][-1] <= -30:
             print("Exchange discrepancy detected. Buying bitcoin now.")
+            #r.order_buy_crypto_by_price('BTC', 1)
             investing = True
             buy_price = current_price
             print("Buy price: " + str(buy_price))
@@ -123,7 +125,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
     print("With transaction fees of 0.075%, total profit was " + str(total_percent_gain) +
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
-
+"""
 def plot_price_diff():
     ask_lists = list()
     bid_lists = list()
@@ -194,7 +196,7 @@ def plot_price_diff():
     print("Investment period finished. A total of " + str(high_diff_count) +
           " transactions were performed for a total profit of " + str(total_percent_gain) + "%.")
     plt.show()
-
+"""
 
 invest(5, 500, -18, -10)
 
