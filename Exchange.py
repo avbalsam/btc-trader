@@ -1,7 +1,7 @@
 import requests
 import json
 import robin_stocks.robinhood as r
-
+import pyotp
 
 # Class which handles exchanges
 class ExchangeInterface:
@@ -294,8 +294,8 @@ class Binance(Exchange):
 
 class Robinhood(Exchange):
     def __init__(self):
-        r.login("Avbalsam1", "Avrahamthegreat1@")
-
+        totp = pyotp.TOTP("VEJYZ6X5KUFESXSQ").now()
+        r.login("Avbalsam1", "Avrahamthegreat1@", mfa_code=totp)
     def get_bid(self):
         #print("rb call")
         return float(r.get_crypto_quote("BTC", "bid_price"))
