@@ -5,7 +5,7 @@ from statistics import mean
 import robin_stocks.robinhood as r
 
 # initialize all exchanges using their constructors
-exchange_list = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance(), HitBtc(), Bittrex()]
+exchange_list = [Robinhood(), Gemini(), ItBit(), Binance(), HitBtc(), Bittrex()]
 
 plot_list = list()
 plot_list1 = list()
@@ -58,7 +58,8 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
 
     # After calculating avg_diff, begin investment process
     for x in range(0, invest_length):
-        print(str(x) + " loops completed. Total profit so far: " + str(total_percent_gain_no_fees))
+        if x % 10 == 0:
+            print(str(x) + " loops completed. Total profit so far: " + str(total_percent_gain_no_fees))
         try:
             bid_list = [x.get_bid() for x in exchange_list]
             ask_list = [x.get_ask() for x in exchange_list]
