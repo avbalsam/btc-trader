@@ -1,16 +1,15 @@
-from typing import List, Any
-
 from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood
 import time
-from matplotlib import pyplot as plt
+#from matplotlib import pyplot as plt
 from statistics import mean
 import robin_stocks.robinhood as r
 
 # initialize all exchanges using their constructors
-exchangeList = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance()]
+exchange_list = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance()]
 
-plotList = list()
-plotList1 = list()
+plot_list = list()
+plot_list1 = list()
+
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
 # returns avg_diffs, a list of the expected differences in price between the first exchange and each other exchange
@@ -29,10 +28,10 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
     print("Initializing model...")
     for x in range(0, init_length):
         try:
-            bid_list = [x.get_bid() for x in exchangeList]
-            #ask_list = [x.get_ask() for x in exchangeList]
+            bid_list = [x.get_bid() for x in exchange_list]
+            # ask_list = [x.get_ask() for x in exchange_list]
             ask_list = []
-            #ask_list.append(mean(ask_list))
+            # ask_list.append(mean(ask_list))
             bid_list.append(mean(bid_list))
             print(bid_list)
             ask_lists.append(ask_list)
@@ -44,7 +43,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
     for el_num in range(0, len(bid_lists[0])):
         bid = [bid_list[el_num] for bid_list in bid_lists]
         bids_over_time.append(bid)
-        plt.plot(bid, label="Exchange " + str(el_num))
+        #plt.plot(bid, label="Exchange " + str(el_num))
     diff_lists = [[bids_over_time[0][el] - bid_list[el] for el in range(0, len(bid_list))] for bid_list in
                   bids_over_time]
     avg_diffs = list()
@@ -60,8 +59,8 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
     # After calculating avg_diff, begin investment process
     for x in range(0, invest_length):
         try:
-            bid_list = [x.get_bid() for x in exchangeList]
-            ask_list = [x.get_ask() for x in exchangeList]
+            bid_list = [x.get_bid() for x in exchange_list]
+            ask_list = [x.get_ask() for x in exchange_list]
         except:
             print("Error collecting prices")
             continue
@@ -99,30 +98,32 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
                 print("Sell price: " + str(sell_price))
                 print("Buy price: " + str(buy_price))
                 percent_gain_no_fees = (sell_price - buy_price) / buy_price * 100
-                #buy_price = buy_price + buy_price * .00075
-                #sell_price = sell_price - sell_price * .00075
+                # buy_price = buy_price + buy_price * .00075
+                # sell_price = sell_price - sell_price * .00075
                 percent_gain = (sell_price - buy_price) / buy_price * 100
                 print("Total profit: " + str(percent_gain) + "%")
                 total_percent_gain += percent_gain
                 total_percent_gain_no_fees += percent_gain_no_fees
-                #r.sell_crypto_by_price("BTC", 1 + percent_gain_no_fees / 100)
+                # r.sell_crypto_by_price("BTC", 1 + percent_gain_no_fees / 100)
                 investing = False
                 buy_price = None
                 transaction_count += 1
         elif buy_disc_count >= 2 or mean_diff[-1][-1] <= -30:
             print("Exchange discrepancy detected. Buying bitcoin now.")
-            #r.order_buy_crypto_by_price('BTC', 1)
+            # r.order_buy_crypto_by_price('BTC', 1)
             investing = True
             buy_price = current_price
             print("Buy price: " + str(buy_price))
         print("Discrepancy count: " + str(buy_disc_count))
         print([diff[-1] for diff in mean_diff])
-        print("Robinhood price change: " + str((current_price - last_price)/current_price * 100) + "%. Robinhood price: " +
+        print("Robinhood price change: " + str(
+            (current_price - last_price) / current_price * 100) + "%. Robinhood price: " +
               str(current_price))
         print("\n")
     print("Investment period concluded. A total of " + str(transaction_count) + " transactions were conducted.")
     print("With transaction fees of 0.075%, total profit was " + str(total_percent_gain) +
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
+
 
 """
 def plot_price_diff():
@@ -130,8 +131,8 @@ def plot_price_diff():
     bid_lists = list()
     for x in range(0, 20):
         try:
-            bid_list = [x.get_bid() for x in exchangeList]
-            ask_list = [x.get_ask() for x in exchangeList]
+            bid_list = [x.get_bid() for x in exchange_list]
+            ask_list = [x.get_ask() for x in exchange_list]
             # bid_list.sort(reverse=True)
             # ask_list.sort()
             ask_list.append(mean(ask_list))
@@ -198,6 +199,5 @@ def plot_price_diff():
 """
 
 invest(5, 500, -18, -10)
-
 
 r.logout()
