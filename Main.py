@@ -97,7 +97,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 lower_count += 1
         # if currently investing, check to see if it's a good time to sell
         if investing:
-            if sell_disc_count >= 3 and mean_diff[-1][-1] > -7:
+            if sell_disc_count >= 2 and mean_diff[-1][-1] > -7:
                 print("Selling bitcoin now.")
                 sell_price = exchange_list[0].get_bid()
                 print("Sell price: " + str(sell_price))
@@ -113,7 +113,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 investing = False
                 buy_price = None
                 transaction_count += 1
-        elif buy_disc_count >= 4 or mean_diff[-1][-1] <= -30:
+        elif buy_disc_count >= 2 or mean_diff[-1][-1] <= -30:
             print("Exchange discrepancy detected. Buying bitcoin now.")
             # r.order_buy_crypto_by_price('BTC', 1)
             investing = True
