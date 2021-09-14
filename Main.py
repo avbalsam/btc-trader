@@ -5,10 +5,7 @@ from statistics import mean
 import robin_stocks.robinhood as r
 
 # initialize all exchanges using their constructors
-exchange_list = [Robinhood(), Gemini(), ItBit(), Binance(), HitBtc(), Bittrex()]
-
-plot_list = list()
-plot_list1 = list()
+exchange_list = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance(), HitBtc(), Bittrex()]
 
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
