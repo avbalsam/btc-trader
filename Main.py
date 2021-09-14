@@ -5,7 +5,7 @@ from statistics import mean
 import robin_stocks.robinhood as r
 
 # initialize all exchanges using their constructors
-exchange_list = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance(), HitBtc(), Bittrex()]
+exchange_list = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance()]
 
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
@@ -131,6 +131,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
 
-invest(5, 1000000, -18, -10, False)
+invest(5, 1000000, -18, -10, True)
 
 r.logout()
