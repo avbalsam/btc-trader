@@ -5,7 +5,7 @@ from statistics import mean
 import robin_stocks.robinhood as r
 
 # initialize all exchanges using their constructors
-exchange_list = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance()]
+exchange_list = [Binance(), Robinhood(), Bitflyer(), Gemini(), ItBit()]
 
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
@@ -103,8 +103,8 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 print("Sell price: " + str(sell_price))
                 print("Buy price: " + str(buy_price))
                 percent_gain_no_fees = (sell_price - buy_price) / buy_price * 100
-                # buy_price = buy_price + buy_price * .00075
-                # sell_price = sell_price - sell_price * .00075
+                buy_price = buy_price + buy_price * .00075
+                sell_price = sell_price - sell_price * .00075
                 percent_gain = (sell_price - buy_price) / buy_price * 100
                 print("Total profit: " + str(percent_gain) + "%")
                 total_percent_gain += percent_gain
@@ -115,7 +115,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 transaction_count += 1
         elif buy_disc_count >= 2 or mean_diff[-1][-1] <= -30:
             print("Exchange discrepancy detected. Buying bitcoin now.")
-            # r.order_buy_crypto_by_price('BTC', 1)
             investing = True
             buy_price = exchange_list[0].get_bid()
             print("Buy price: " + str(buy_price))
@@ -131,6 +130,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
 
-invest(5, 1000000, -18, -10, True)
+invest(5, 500, -25, -10, True)
 
 r.logout()
