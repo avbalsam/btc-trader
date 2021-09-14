@@ -121,6 +121,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
         # print("Discrepancy count: " + str(buy_disc_count))
         if verbose_logging:
             print([round(diff[-1], 2) for diff in mean_diff])
+            print("Price change: " + str(current_price-last_price))
         # print("Robinhood price change: " + str(
         #    (current_price - last_price) / current_price * 100) + "%. Robinhood price: " +
         #      str(current_price))
