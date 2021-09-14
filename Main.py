@@ -25,7 +25,10 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
     print("Initializing model...")
     for x in range(0, init_length):
         try:
+            exchange_list.reverse()
             bid_list = [x.get_bid() for x in exchange_list]
+            exchange_list.reverse()
+            bid_list.reverse()
             # ask_list = [x.get_ask() for x in exchange_list]
             ask_list = []
             # ask_list.append(mean(ask_list))
