@@ -97,7 +97,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 lower_count += 1
         # if currently investing, check to see if it's a good time to sell
         if investing:
-            if sell_disc_count >= 2 and mean_diff[-1][-1] > -7 and lower_count < len(exchange_list)-1:
+            if sell_disc_count >= 2 and mean_diff[-1][-1] > -7 and lower_count < len(exchange_list):
                 print("Selling bitcoin now.")
                 sell_price = exchange_list[0].get_bid()
                 print("Sell price: " + str(sell_price))
