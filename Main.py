@@ -10,7 +10,7 @@ exchange_list = [Robinhood(), Bitflyer(), Gemini(), ItBit(), Binance(), HitBtc()
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
 # returns avg_diffs, a list of the expected differences in price between the first exchange and each other exchange
-def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
+def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbose_logging):
     investing = False
     buy_price = None
     total_percent_gain = 0
@@ -117,7 +117,8 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
             buy_price = exchange_list[0].get_bid()
             print("Buy price: " + str(buy_price))
         #print("Discrepancy count: " + str(buy_disc_count))
-        #print([diff[-1] for diff in mean_diff])
+        if verbose_logging:
+            print([diff[-1] for diff in mean_diff])
         #print("Robinhood price change: " + str(
         #    (current_price - last_price) / current_price * 100) + "%. Robinhood price: " +
         #      str(current_price))
@@ -126,6 +127,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy):
     print("With transaction fees of 0.075%, total profit was " + str(total_percent_gain) +
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
-invest(5, 1000000, -18, -10)
+invest(5, 1000000, -18, -10, True)
 
 r.logout()
