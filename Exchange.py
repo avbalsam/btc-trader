@@ -294,8 +294,8 @@ class Binance(Exchange):
 
 class Robinhood(Exchange):
     def __init__(self):
-        totp = pyotp.TOTP("VEJYZ6X5KUFESXSQ").now()
-        r.login("Avbalsam1", "Avrahamthegreat1@", mfa_code=totp)
+        totp = pyotp.TOTP("NBB2XJDL2IBBSYZG").now()
+        r.login("Avbalsam", "Avrahamthegreat1@", mfa_code=totp)
     def get_bid(self):
         #print("rb call")
         return float(r.get_crypto_quote("BTC", "bid_price"))
