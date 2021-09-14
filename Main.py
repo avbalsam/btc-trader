@@ -87,14 +87,17 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
 
         buy_disc_count = 0
         sell_disc_count = 0
+        lower_count = 0
         for i in range(0, len(diff_lists)):
             if mean_diff[i][-1] <= buy_discrepancy:
                 buy_disc_count += 1
             if mean_diff[i][-1] >= sell_discrepancy:
                 sell_disc_count += 1
+            if mean_diff[i][-1] < 5:
+                lower_count += 1
         # if currently investing, check to see if it's a good time to sell
         if investing:
-            if sell_disc_count >= 2 and mean_diff[-1][-1] > -7:
+            if sell_disc_count >= 2 and mean_diff[-1][-1] > -7 and lower_count < len(exchange_list)-1:
                 print("Selling bitcoin now.")
                 sell_price = exchange_list[0].get_bid()
                 print("Sell price: " + str(sell_price))
@@ -110,7 +113,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 investing = False
                 buy_price = None
                 transaction_count += 1
-        elif buy_disc_count >= 2 or mean_diff[-1][-1] <= -30:
+        elif buy_disc_count >= 2 or mean_diff[-1][-1] <= -30 or lower_count == len(exchange_list)-1:
             print("Exchange discrepancy detected. Buying bitcoin now.")
             # r.order_buy_crypto_by_price('BTC', 1)
             investing = True
@@ -118,7 +121,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
             print("Buy price: " + str(buy_price))
         #print("Discrepancy count: " + str(buy_disc_count))
         if verbose_logging:
-            print([diff[-1] for diff in mean_diff])
+            print([round(diff[-1], 2) for diff in mean_diff])
         #print("Robinhood price change: " + str(
         #    (current_price - last_price) / current_price * 100) + "%. Robinhood price: " +
         #      str(current_price))
