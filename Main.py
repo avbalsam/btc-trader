@@ -93,7 +93,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 buy_disc_count += 1
             if mean_diff[i][-1] >= sell_discrepancy:
                 sell_disc_count += 1
-            if mean_diff[i][-1] < 5:
+            if mean_diff[i][-1] < -5:
                 lower_count += 1
         # if currently investing, check to see if it's a good time to sell
         if investing:
@@ -130,6 +130,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
     print("With transaction fees of 0.075%, total profit was " + str(total_percent_gain) +
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
-invest(5, 1000000, -18, -10, True)
+invest(5, 1000000, -18, -10, False)
 
 r.logout()
