@@ -5,7 +5,7 @@ from statistics import mean
 import robin_stocks.robinhood as r
 
 # initialize all exchanges using their constructors
-exchange_list = [Bitmex(), Binance(), Robinhood(), Bitflyer(), Gemini(), ItBit(), HitBtc(), Bittrex()]
+exchange_list = [Binance(), Robinhood(), Bitflyer(), Gemini(), ItBit(), HitBtc(), Bittrex()]
 
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
@@ -113,7 +113,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 investing = False
                 buy_price = None
                 transaction_count += 1
-        elif buy_disc_count >= 4 or mean_diff[-1][-1] <= -30:
+        elif buy_disc_count >= 5 or mean_diff[-1][-1] <= -30:
             print("Exchange discrepancy detected. Buying bitcoin now.")
             investing = True
             buy_price = exchange_list[0].get_bid()
