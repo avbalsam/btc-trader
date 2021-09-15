@@ -131,6 +131,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
 
-invest(5, 500, -25, -15, True)
+invest(5, 1000000, -25, -15, True)
 
 r.logout()
