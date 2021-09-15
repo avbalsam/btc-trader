@@ -1,11 +1,11 @@
-from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood
+from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood, Bitmex
 import time
 # from matplotlib import pyplot as plt
 from statistics import mean
 import robin_stocks.robinhood as r
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), Robinhood(), Bitflyer(), Gemini(), ItBit(), HitBtc(), Bittrex()]
+exchange_list = [Bitmex(), Binance(), Robinhood(), Bitflyer(), Gemini(), ItBit(), HitBtc(), Bittrex()]
 
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
@@ -99,12 +99,12 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
         if investing:
             if sell_disc_count >= 3 and mean_diff[-1][-1] > -7:
                 print("Selling bitcoin now.")
-                sell_price = exchange_list[0].get_bid()
+                sell_price = exchange_list[0].get_ask()
                 print("Sell price: " + str(sell_price))
                 print("Buy price: " + str(buy_price))
                 percent_gain_no_fees = (sell_price - buy_price) / buy_price * 100
-                buy_price = buy_price + buy_price * .00075
-                sell_price = sell_price - sell_price * .00075
+                buy_price = buy_price + buy_price * .00025
+                # sell_price = sell_price - sell_price * .00075
                 percent_gain = (sell_price - buy_price) / buy_price * 100
                 print("Total profit: " + str(percent_gain) + "%")
                 total_percent_gain += percent_gain

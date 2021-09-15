@@ -2,6 +2,8 @@ import requests
 import json
 import robin_stocks.robinhood as r
 import pyotp
+import bitmex
+
 
 # Class which handles exchanges
 class ExchangeInterface:
@@ -263,7 +265,7 @@ class Binance(Exchange):
         self.get_ticker_endpoint = 'api/v3/ticker/bookTicker?symbol={product_code}'
         self.get_board_endpoint = 'api/v3/depth?symbol={product_code}'
         self.product_code = 'BTCTUSD'
-        self.buy_endpoint = None
+        self.buy_endpoint = 'api/v3/order/test?symbol=BTCUSDT&'
         self.sell_endpoint = None
         # Added .1% to the Binance trading fee of .1% since TUSD has a trading fee of .1%
         self.trading_fee = .002
@@ -294,11 +296,26 @@ class Binance(Exchange):
 
 class Robinhood(Exchange):
     def __init__(self):
-        totp = pyotp.TOTP("NBB2XJDL2IBBSYZG").now()
-        r.login("Avbalsam", "Avrahamthegreat1@", mfa_code=totp)
+        self.totp = pyotp.TOTP("NBB2XJDL2IBBSYZG").now()
+        r.login("Avbalsam", "Avrahamthegreat1@", mfa_code=self.totp)
     def get_bid(self):
         #print("rb call")
         return float(r.get_crypto_quote("BTC", "bid_price"))
 
     def get_ask(self):
         return float(r.get_crypto_quote("BTC", "ask_price"))
+
+
+class Bitmex(Exchange):
+    def __init__(self):
+        self.api_key = "nii8W8iDzk4EQXAgNBk6FIAT"
+        self.api_secret = "yoTgMAeHxqV91p98JSEqV8G26AkMm7M5v3QHaSI-qQQVlyhd"
+        self.client = bitmex.bitmex(test=False, api_key=self.api_key, api_secret=self.api_secret)
+
+    def get_ask(self):
+        response = requests.get("https://www.bitmex.com/api/v1/orderBook/L2?symbol=xbt&depth=1").json()
+        return response[0]['price']
+
+    def get_bid(self):
+        response = requests.get("https://www.bitmex.com/api/v1/orderBook/L2?symbol=xbt&depth=1").json()
+        return response[1]['price']
