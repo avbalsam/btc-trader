@@ -3,6 +3,7 @@ import json
 import robin_stocks.robinhood as r
 import pyotp
 import bitmex
+from binance import Client as binance_client
 
 
 # Class which handles exchanges
@@ -261,14 +262,13 @@ class Binance(Exchange):
 
     def __init__(self):
         self.base_url = 'https://www.binance.com/'
-        self.key = None
+        self.key = "aN5UaSppjZo1aph321encNJbeTYzfPSIkwERtDQdH7mDhm532NuPeuMisjtp2JmU"
+        self.secret = "GaIUogqTeOMdfQGRDEOsyt6GrpIYP270AVw60c2odfo4pQFhMzXLhFa0gq4LJuWk"
         self.get_ticker_endpoint = 'api/v3/ticker/bookTicker?symbol={product_code}'
         self.get_board_endpoint = 'api/v3/depth?symbol={product_code}'
-        self.product_code = 'BTCTUSD'
-        self.buy_endpoint = 'api/v3/order/test?symbol=BTCUSDT&'
+        self.product_code = 'BTCUSDT'
         self.sell_endpoint = None
-        # Added .1% to the Binance trading fee of .1% since TUSD has a trading fee of .1%
-        self.trading_fee = .002
+        self.client = binance_client(self.key, self.secret)
 
     def get_bid(self):
         """
@@ -292,6 +292,12 @@ class Binance(Exchange):
         response = self.get_ticker()
         ask = float(response['askPrice'])
         return ask
+
+    def buy_market(self, quantity):
+        self.client.order_market_buy(symbol="BTCUSDT", quantity=quantity)
+
+    def sell_market(self, quantity):
+        self.client.order_market_sell(symbol="BTCUSDT", quantity=quantity)
 
 
 class Robinhood(Exchange):

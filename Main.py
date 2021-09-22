@@ -104,6 +104,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
         if investing:
             if sell_disc_count >= 5 and mean_diff[-1][-1] > -7:
                 print("Selling bitcoin now.")
+                #exchange_list[0].sell_market(.0001)
                 sell_price = exchange_list[0].get_ask()
                 print("Sell price: " + str(sell_price))
                 print("Buy price: " + str(buy_price))
@@ -114,13 +115,13 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 print("Total profit: " + str(percent_gain) + "%")
                 total_percent_gain += percent_gain
                 total_percent_gain_no_fees += percent_gain_no_fees
-                # r.sell_crypto_by_price("BTC", 1 + percent_gain_no_fees / 100)
                 investing = False
                 buy_price = None
                 transaction_count += 1
         elif buy_disc_count >= 5 or mean_diff[-1][-1] <= -30:
             print("Exchange discrepancy detected. Buying bitcoin now.")
             investing = True
+            #exchange_list[0].buy_market(.0001)
             buy_price = exchange_list[0].get_bid()
             print("Buy price: " + str(buy_price))
         # print("Discrepancy count: " + str(buy_disc_count))
