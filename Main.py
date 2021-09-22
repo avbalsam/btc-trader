@@ -26,7 +26,11 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
     while len(bid_lists) < init_length:
         try:
             #exchange_list.reverse()
-            bid_list = [x.get_bid() for x in exchange_list]
+            #bid_list = [x.get_bid() for x in exchange_list]
+            bid_list = list()
+            for x in exchange_list:
+                bid_list.append(x.get_bid())
+                print(x)
             #exchange_list.reverse()
             #bid_list.reverse()
             # ask_list = [x.get_ask() for x in exchange_list]
@@ -37,7 +41,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
             ask_lists.append(ask_list)
             bid_lists.append(bid_list)
         except:
-            print("Error collecting price")
+            print("Error collecting price.")
         time.sleep(.1)
     bids_over_time = list()
     for el_num in range(0, len(bid_lists[0])):
