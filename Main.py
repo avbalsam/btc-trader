@@ -23,7 +23,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
 
     # initialize values
     print("Initializing model...")
-    for x in range(0, init_length):
+    while len(bid_lists) < init_length:
         try:
             #exchange_list.reverse()
             bid_list = [x.get_bid() for x in exchange_list]
