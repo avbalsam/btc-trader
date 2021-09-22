@@ -66,7 +66,8 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
         time.sleep(1)
         if x % 100 == 0:
             print(str(x) + " loops completed. Total profit so far: " + str(total_percent_gain))
-            print("Average profit per transaction: " + str(mean(transaction_gains)))
+            if len(transaction_gains) > 0:
+                print("Average profit per transaction: " + str(mean(transaction_gains)))
         try:
             bid_list = [x.get_bid() for x in exchange_list]
             ask_list = [x.get_ask() for x in exchange_list]
