@@ -4,3 +4,4 @@ robin_stocks==2.0.4
 pyotp==2.6.0
 bravado==11.0.3
 bitmex==0.2.2
+python_binance==1.0.14
