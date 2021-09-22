@@ -280,7 +280,7 @@ class Binance(Exchange):
         #print("binance call")
         response = self.get_ticker()
         bid = float(response['bidPrice'])
-        return bid - (bid * self.trading_fee)
+        return bid
 
     def get_ask(self):
         """
