@@ -13,6 +13,7 @@ exchange_list = [Binance(), Robinhood(), Gemini(), ItBit(), HitBtc(), Bittrex()]
 def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbose_logging):
     investing = False
     buy_price = None
+    transaction_gains = list()
     total_percent_gain = 0
     total_percent_gain_no_fees = 0
     transaction_count = 0
@@ -65,6 +66,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
         time.sleep(1)
         if x % 100 == 0:
             print(str(x) + " loops completed. Total profit so far: " + str(total_percent_gain))
+            print("Average profit per transaction: " + str(mean(transaction_gains)))
         try:
             bid_list = [x.get_bid() for x in exchange_list]
             ask_list = [x.get_ask() for x in exchange_list]
@@ -112,6 +114,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 buy_price = buy_price + buy_price * .00075
                 # sell_price = sell_price - sell_price * .00075
                 percent_gain = (sell_price - buy_price) / buy_price * 100
+                transaction_gains.append(percent_gain)
                 print("Total profit: " + str(percent_gain) + "%")
                 total_percent_gain += percent_gain
                 total_percent_gain_no_fees += percent_gain_no_fees
