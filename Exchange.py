@@ -4,6 +4,7 @@ import robin_stocks.robinhood as r
 import pyotp
 import bitmex
 from binance import Client as binance_client
+from coinbase.wallet.client import Client as coinbase_client
 
 
 # Class which handles exchanges
@@ -325,3 +326,16 @@ class Bitmex(Exchange):
     def get_bid(self):
         response = requests.get("https://www.bitmex.com/api/v1/orderBook/L2?symbol=xbt&depth=1").json()
         return response[1]['price']
+
+
+class Coinbase(Exchange):
+    def __init__(self):
+        self.key = "htOrL0BtSce3EJSk"
+        self.secret = "hRtHO8WCWzFXS6enizoGGiPvJIEe2jem"
+        self.client = coinbase_client(self.key, self.secret)
+
+    def get_bid(self):
+        return self.client.get_sell_price()
+
+    def get_ask(self):
+        return self.client.get_buy_price()

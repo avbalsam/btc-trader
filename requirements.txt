@@ -5,3 +5,4 @@ pyotp==2.6.0
 bravado==11.0.3
 bitmex==0.2.2
 python_binance==1.0.14
+coinbase==2.1.0
