@@ -113,7 +113,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 print("Buy price: " + str(buy_price))
                 percent_gain_no_fees = (sell_price - buy_price) / buy_price * 100
                 buy_price = buy_price + buy_price * .00075
-                # sell_price = sell_price - sell_price * .00075
+                sell_price = sell_price - sell_price * .00075
                 percent_gain = (sell_price - buy_price) / buy_price * 100
                 transaction_gains.append(percent_gain)
                 print("Total profit: " + str(percent_gain) + "%")
