@@ -122,7 +122,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 investing = False
                 buy_price = None
                 transaction_count += 1
-        elif buy_disc_count >= 5 or mean_diff[-1][-1] <= -30:
+        elif buy_disc_count >= 6 or mean_diff[-1][-1] <= -45:
             print("Exchange discrepancy detected. Buying bitcoin now.")
             investing = True
             #exchange_list[0].buy_market(.0001)
