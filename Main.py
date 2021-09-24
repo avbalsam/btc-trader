@@ -1,11 +1,11 @@
-from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood, Bitmex
+from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood, Bitmex, Coinbase
 import time
 # from matplotlib import pyplot as plt
 from statistics import mean
 import robin_stocks.robinhood as r
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), Robinhood(), Gemini(), ItBit(), HitBtc(), Bittrex()]
+exchange_list = [Binance(), Robinhood(), Gemini(), ItBit(), HitBtc(), Bittrex(), Coinbase()]
 
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange

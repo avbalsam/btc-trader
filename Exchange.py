@@ -335,7 +335,7 @@ class Coinbase(Exchange):
         self.client = coinbase_client(self.key, self.secret)
 
     def get_bid(self):
-        return self.client.get_sell_price()
+        return self.client.get_sell_price()["amount"]
 
     def get_ask(self):
-        return self.client.get_buy_price()
+        return self.client.get_buy_price()["amount"]
