@@ -86,7 +86,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
         for i in range(0, len(bid_list)):
             bids_over_time[i].append(bid_list[i])
             diff_lists[i].append(bids_over_time[0][-1] - bids_over_time[i][-1])
-            avg_diffs[i] = mean(diff_lists[i][-240:])
+            avg_diffs[i] = mean(diff_lists[i][-90:])
             mean_diff[i].append(diff_lists[i][-1] - avg_diffs[i])
         # print(avg_diffs)
 
@@ -141,6 +141,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
 
-invest(250, 1000000, -75, -30, True)
+invest(100, 1000000, -75, -30, True)
 
 r.logout()
