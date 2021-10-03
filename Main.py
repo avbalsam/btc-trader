@@ -31,7 +31,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
             bid_list = list()
             for x in exchange_list:
                 bid_list.append(x.get_bid())
-                print(x)
             #exchange_list.reverse()
             #bid_list.reverse()
             # ask_list = [x.get_ask() for x in exchange_list]
