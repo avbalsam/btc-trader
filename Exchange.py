@@ -300,6 +300,10 @@ class Binance(Exchange):
     def sell_market(self, quantity):
         self.client.order_market_sell(symbol="BTCUSDT", quantity=quantity)
 
+    def get_historical_klines(self, num_days):
+        data = self.client.get_historical_klines("BTCUSDT", self.client.KLINE_INTERVAL_1MINUTE, str(num_days) + "day ago UTC")
+        return data
+
 
 class Robinhood(Exchange):
     def __init__(self):
