@@ -62,7 +62,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
 
     # After calculating avg_diff, begin investment process
     for x in range(0, invest_length):
-        time.sleep(1)
         if x % 100 == 0:
             print(str(x) + " loops completed. Total profit so far: " + str(total_percent_gain))
             if len(transaction_gains) > 0:
