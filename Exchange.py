@@ -263,13 +263,7 @@ class Binance(Exchange):
     """Subclass of exchange which deals with the Binance API. This API only supports conversion to TUSD."""
 
     def __init__(self):
-        self.base_url = 'https://www.binance.com/'
-        self.key = "aN5UaSppjZo1aph321encNJbeTYzfPSIkwERtDQdH7mDhm532NuPeuMisjtp2JmU"
-        self.secret = "GaIUogqTeOMdfQGRDEOsyt6GrpIYP270AVw60c2odfo4pQFhMzXLhFa0gq4LJuWk"
-        self.get_ticker_endpoint = 'api/v3/ticker/bookTicker?symbol={product_code}'
-        self.get_board_endpoint = 'api/v3/depth?symbol={product_code}'
         self.product_code = 'BTCUSDT'
-        self.sell_endpoint = None
         self.client = binance_client(self.key, self.secret)
         self.socket_data = list()
         self.best_ask = float()
@@ -292,10 +286,7 @@ class Binance(Exchange):
         Returns:
             bid (float): Best bid on the Binance market
         """
-        #print("binance call")
-        response = self.get_ticker()
-        bid = float(response['bidPrice'])
-        return bid
+        return self.best_bid
 
     def get_ask(self):
         """
@@ -304,9 +295,7 @@ class Binance(Exchange):
         Returns:
             ask (float): Best ask on the Binance market
         """
-        response = self.get_ticker()
-        ask = float(response['askPrice'])
-        return ask
+        return self.best_ask
 
     def buy_market(self, quantity):
         self.client.order_market_buy(symbol="BTCUSDT", quantity=quantity)
