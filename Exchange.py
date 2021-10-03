@@ -276,8 +276,6 @@ class Binance(Exchange):
     """Subclass of exchange which deals with the Binance API. This API only supports conversion to USDT."""
 
     def __init__(self):
-        self.product_code = 'BTCUSDT'
-        self.client = binance_client(self.key, self.secret)
         self.socket_data = list()
         self.best_ask = float()
         self.best_bid = float()
@@ -299,7 +297,7 @@ class Binance(Exchange):
         Returns:
             bid (float): Best bid on the Binance market
         """
-        return self.best_bid
+        return float(self.best_bid)
 
     def get_ask(self):
         """
@@ -308,7 +306,7 @@ class Binance(Exchange):
         Returns:
             ask (float): Best ask on the Binance market
         """
-        return self.best_ask
+        return float(self.best_ask)
 
     def buy_market(self, quantity):
         self.client.order_market_buy(symbol="BTCUSDT", quantity=quantity)
@@ -375,8 +373,11 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
 
     def on_message(self, msg):
         self.socket_data.append(msg)
-        self.best_bid = msg['best_bid']
-        self.best_ask = msg['best_ask']
+        try:
+            self.best_bid = msg['best_bid']
+            self.best_ask = msg['best_ask']
+        except KeyError:
+            pass
 
     def on_close(self):
         print("Coinbase websocket closed!")
