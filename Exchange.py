@@ -5,7 +5,7 @@ import pyotp
 import bitmex
 from binance import Client as binance_client
 from binance import ThreadedWebsocketManager
-from coinbase.wallet.client import Client as coinbase_client
+import cbpro
 
 
 # Class which handles exchanges
@@ -89,7 +89,7 @@ class Bitflyer(Exchange):
         Returns:
             bid (float): Best bid on the Bitflyer market
         """
-        #print("bitflyer call")
+        # print("bitflyer call")
         response = self.get_ticker()
         bid = float(response['best_bid'])
         return bid - bid * self.trading_fee
@@ -126,7 +126,7 @@ class ItBit(Exchange):
         Returns:
             bid (float): Best bid on the ItBit market
         """
-        #print("itbit call")
+        # print("itbit call")
         response = self.get_ticker()
         bid = float(response['bid'])
         return bid - (bid * self.trading_fee)
@@ -165,7 +165,7 @@ class Bittrex(Exchange):
         Returns:
             bid (float): Best bid on the Bittrex market
         """
-        #print("bittrex call")
+        # print("bittrex call")
         response = self.get_ticker()
         bid = float(response['result']['Bid'])
         # Take the reciprocal of the bid for consistency with the other APIs
@@ -206,7 +206,7 @@ class Gemini(Exchange):
         Returns:
             bid (float): Best bid on the Gemini market
         """
-        #print("gemini call")
+        # print("gemini call")
         response = self.get_ticker()
         bid = float(response['bid'])
         return bid
@@ -242,7 +242,7 @@ class HitBtc(Exchange):
         Returns:
             bid (float): Best bid on the HitBtc market
         """
-        #print("hitbtc call")
+        # print("hitbtc call")
         response = self.get_ticker()
         bid = float(response['bid'])
         return bid
@@ -260,7 +260,7 @@ class HitBtc(Exchange):
 
 
 class Binance(Exchange):
-    """Subclass of exchange which deals with the Binance API. This API only supports conversion to TUSD."""
+    """Subclass of exchange which deals with the Binance API. This API only supports conversion to USDT."""
 
     def __init__(self):
         self.product_code = 'BTCUSDT'
@@ -269,7 +269,7 @@ class Binance(Exchange):
         self.best_ask = float()
         self.best_bid = float()
 
-        #initialize websocket
+        # initialize websocket
         twm = ThreadedWebsocketManager()
         twm.start()
         twm.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message, symbol="BTCUSDT")
@@ -304,7 +304,8 @@ class Binance(Exchange):
         self.client.order_market_sell(symbol="BTCUSDT", quantity=quantity)
 
     def get_historical_klines(self, num_days):
-        data = self.client.get_historical_klines("BTCUSDT", self.client.KLINE_INTERVAL_1MINUTE, str(num_days) + "day ago UTC")
+        data = self.client.get_historical_klines("BTCUSDT", self.client.KLINE_INTERVAL_1MINUTE,
+                                                 str(num_days) + "day ago UTC")
         return data
 
 
@@ -312,8 +313,9 @@ class Robinhood(Exchange):
     def __init__(self):
         self.totp = pyotp.TOTP("NBB2XJDL2IBBSYZG").now()
         r.login("Avbalsam", "Avrahamthegreat1@", mfa_code=self.totp)
+
     def get_bid(self):
-        #print("rb call")
+        # print("rb call")
         return float(r.get_crypto_quote("BTC", "bid_price"))
 
     def get_ask(self):
@@ -335,14 +337,43 @@ class Bitmex(Exchange):
         return response[1]['price']
 
 
+class coinbaseWebsocketClient(cbpro.WebsocketClient):
+    def __init__(self):
+        super().__init__()
+        self.socket_data = None
+        self.best_ask = None
+        self.best_bid = None
+    """
+    Class to handle coinbase websocket events
+    """
+    def on_open(self):
+        """
+        Method inherited from cbpro.WebsocketClient class which is run immediately before
+        establishing websocket connection
+        """
+        self.url = "wss://ws-feed.pro.coinbase.com/"
+        self.products = ["BTC-USD"]
+        self.channels = ["ticker"]
+        self.socket_data = list()
+        self.best_bid = float()
+        self.best_ask = float()
+
+    def on_message(self, msg):
+        self.socket_data.append(msg)
+        self.best_bid = msg['best_bid']
+        self.best_ask = msg['best_ask']
+
+    def on_close(self):
+        print("Coinbase websocket closed!")
+
+
 class Coinbase(Exchange):
     def __init__(self):
-        self.key = "htOrL0BtSce3EJSk"
-        self.secret = "hRtHO8WCWzFXS6enizoGGiPvJIEe2jem"
-        self.client = coinbase_client(self.key, self.secret)
+        self.client = coinbaseWebsocketClient()
+        self.client.start()
 
     def get_bid(self):
-        return float(self.client.get_sell_price()["amount"])
+        return float(self.client.best_bid)
 
     def get_ask(self):
-        return float(self.client.get_buy_price()["amount"])
+        return float(self.client.best_ask)
