@@ -6,6 +6,8 @@ import bitmex
 from binance import Client as binance_client
 from binance import ThreadedWebsocketManager
 import cbpro
+import threading, time, queue
+from hitbtc import HitBTC
 
 
 # Class which handles exchanges
@@ -227,13 +229,15 @@ class HitBtc(Exchange):
     """Subclass of Exchange for dealing with the HitBtc API"""
 
     def __init__(self):
-        self.base_url = "https://api.hitbtc.com/"
-        self.get_ticker_endpoint = 'api/2/public/ticker/{product_code}'
-        self.get_board_endpoint = "api/2/public/orderbook/{product_code}"
-        self.product_code = 'BTCUSD'
-        self.buy_endpoint = None
-        self.sell_endpoint = None
-        self.trading_fee = .002
+        self.socket_data = list()
+        self.best_bid = float()
+        self.best_ask = float()
+        self.client = HitBTC()
+        self.client.start()
+        time.sleep(1)
+        self.client.subscribe_ticker(symbol="BTCUSD")
+        t = threading.Thread(target=self.thread_receive_socket_data)
+        t.start()
 
     def get_bid(self):
         """
@@ -242,10 +246,7 @@ class HitBtc(Exchange):
         Returns:
             bid (float): Best bid on the HitBtc market
         """
-        # print("hitbtc call")
-        response = self.get_ticker()
-        bid = float(response['bid'])
-        return bid
+        return float(self.best_bid)
 
     def get_ask(self):
         """
@@ -254,9 +255,21 @@ class HitBtc(Exchange):
         Returns:
             ask (float): Best ask on the HitBtc market
         """
-        response = self.get_ticker()
-        ask = float(response['ask'])
-        return ask
+        return float(self.best_ask)
+
+    def thread_receive_socket_data(self):
+        while True:
+            try:
+                data = self.client.recv()
+                ticker = data[2]
+                try:
+                    self.best_ask = ticker['ask']
+                    self.best_bid = ticker['bid']
+                    self.socket_data.append(ticker)
+                except:
+                    continue
+            except queue.Empty:
+                continue
 
 
 class Binance(Exchange):
@@ -343,9 +356,11 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
         self.socket_data = None
         self.best_ask = None
         self.best_bid = None
+
     """
     Class to handle coinbase websocket events
     """
+
     def on_open(self):
         """
         Method inherited from cbpro.WebsocketClient class which is run immediately before

@@ -6,3 +6,4 @@ bravado==11.0.3
 bitmex==0.2.2
 python_binance==1.0.15
 cbpro==1.1.4
+hitbtc==1.0.4
