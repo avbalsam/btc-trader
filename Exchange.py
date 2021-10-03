@@ -286,8 +286,11 @@ class Binance(Exchange):
 
     def handle_ticker_socket_message(self, msg):
         self.socket_data.append(msg)
-        self.best_ask = msg['a']
-        self.best_bid = msg['b']
+        try:
+            self.best_ask = msg['a']
+            self.best_bid = msg['b']
+        except KeyError:
+            pass
 
     def get_bid(self):
         """
