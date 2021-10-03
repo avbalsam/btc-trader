@@ -4,6 +4,7 @@ import robin_stocks.robinhood as r
 import pyotp
 import bitmex
 from binance import Client as binance_client
+from binance import ThreadedWebsocketManager
 from coinbase.wallet.client import Client as coinbase_client
 
 
@@ -270,6 +271,19 @@ class Binance(Exchange):
         self.product_code = 'BTCUSDT'
         self.sell_endpoint = None
         self.client = binance_client(self.key, self.secret)
+        self.socket_data = list()
+        self.best_ask = float()
+        self.best_bid = float()
+
+        #initialize websocket
+        twm = ThreadedWebsocketManager()
+        twm.start()
+        twm.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message, symbol="BTCUSDT")
+
+    def handle_ticker_socket_message(self, msg):
+        self.socket_data.append(msg)
+        self.best_ask = msg['a']
+        self.best_bid = msg['b']
 
     def get_bid(self):
         """
