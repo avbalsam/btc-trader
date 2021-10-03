@@ -108,12 +108,12 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
             if sell_disc_count >= 5 and mean_diff[-1][-1] > -7:
                 print("Selling bitcoin now.")
                 #exchange_list[0].sell_market(.0001)
-                sell_price = exchange_list[0].get_ask()
+                sell_price = exchange_list[0].get_bid()
                 print("Sell price: " + str(sell_price))
                 print("Buy price: " + str(buy_price))
                 percent_gain_no_fees = (sell_price - buy_price) / buy_price * 100
                 buy_price = buy_price + buy_price * .00075
-                # sell_price = sell_price - sell_price * .00075
+                sell_price = sell_price - sell_price * .00075
                 percent_gain = (sell_price - buy_price) / buy_price * 100
                 transaction_gains.append(percent_gain)
                 print("Total profit: " + str(percent_gain) + "%")
@@ -122,11 +122,11 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
                 investing = False
                 buy_price = None
                 transaction_count += 1
-        elif buy_disc_count >= 5 or mean_diff[-1][-1] <= -30:
+        elif buy_disc_count >= 5 or mean_diff[-1][-1] <= -45:
             print("Exchange discrepancy detected. Buying bitcoin now.")
             investing = True
             #exchange_list[0].buy_market(.0001)
-            buy_price = exchange_list[0].get_bid()
+            buy_price = exchange_list[0].get_ask()
             print("Buy price: " + str(buy_price))
         # print("Discrepancy count: " + str(buy_disc_count))
         if verbose_logging:
@@ -141,6 +141,6 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
 
-invest(100, 1000000, -60, -20, False)
+invest(100, 1000000, -75, -30, True)
 
 r.logout()
