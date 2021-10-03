@@ -2,7 +2,6 @@ import requests
 import json
 import robin_stocks.robinhood as r
 import pyotp
-import bitmex
 from binance import Client as binance_client
 from binance import ThreadedWebsocketManager
 import cbpro
@@ -332,7 +331,7 @@ class Robinhood(Exchange):
     def get_ask(self):
         return float(r.get_crypto_quote("BTC", "ask_price"))
 
-
+"""
 class Bitmex(Exchange):
     def __init__(self):
         self.api_key = "nii8W8iDzk4EQXAgNBk6FIAT"
@@ -346,7 +345,7 @@ class Bitmex(Exchange):
     def get_bid(self):
         response = requests.get("https://www.bitmex.com/api/v1/orderBook/L2?symbol=xbt&depth=1").json()
         return response[1]['price']
-
+"""
 
 class coinbaseWebsocketClient(cbpro.WebsocketClient):
     def __init__(self):

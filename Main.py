@@ -1,4 +1,4 @@
-from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood, Bitmex, Coinbase
+from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood, Coinbase
 import time
 # from matplotlib import pyplot as plt
 from statistics import mean
