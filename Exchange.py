@@ -7,6 +7,7 @@ from binance import ThreadedWebsocketManager
 import cbpro
 import threading, time, queue
 from hitbtc import HitBTC
+from gemini import GeminiOrderBook
 
 
 # Class which handles exchanges
@@ -74,6 +75,7 @@ class Bitflyer(Exchange):
     """Subclass of Exchange which handles the Bitflyer API"""
 
     def __init__(self):
+        self.name = "Bitflyer"
         self.base_url = 'https://api.bitflyer.com/'
         self.key = None
         self.get_ticker_endpoint = 'v1/getticker?product_code={product_code}'
@@ -111,6 +113,7 @@ class ItBit(Exchange):
     """Subclass of Exchange which handles the ItBit API"""
 
     def __init__(self):
+        self.name = "ItBit"
         self.base_url = 'https://api.itbit.com/v1/'
         self.key = None
         self.get_ticker_endpoint = 'markets/{product_code}/ticker'
@@ -150,6 +153,7 @@ class Bittrex(Exchange):
     Bittrex only supports conversion from USDC, a type of cryptocurrency whose value is set at $1.00."""
 
     def __init__(self):
+        self.name = "Bittrex"
         self.base_url = 'https://api.bittrex.com/api/v1.1/'
         self.key = None
         self.get_ticker_endpoint = 'public/getticker?market={product_code}'
@@ -191,14 +195,16 @@ class Gemini(Exchange):
     """Subclass of Exchange which handles the Gemini API"""
 
     def __init__(self):
-        self.base_url = 'https://api.gemini.com/'
-        self.key = None
-        self.get_ticker_endpoint = 'v1/pubticker/{product_code}'
-        self.get_board_endpoint = 'v1/book/{product_code}'
-        self.product_code = 'btcusd'
-        self.buy_endpoint = None
-        self.sell_endpoint = None
-        self.trading_fee = .0035
+        self.name = "Gemini"
+        self.client = GeminiOrderBook("btcusd")
+        #time.sleep(1)
+        self.client.start()
+        self.socket_data = list()
+        self.best_bid = float()
+        self.best_ask = float()
+        time.sleep(1)
+        t = threading.Thread(target=self.thread_receive_socket_data)
+        t.start()
 
     def get_bid(self):
         """
@@ -207,10 +213,7 @@ class Gemini(Exchange):
         Returns:
             bid (float): Best bid on the Gemini market
         """
-        # print("gemini call")
-        response = self.get_ticker()
-        bid = float(response['bid'])
-        return bid
+        return float(self.best_bid)
 
     def get_ask(self):
         """
@@ -219,15 +222,24 @@ class Gemini(Exchange):
         Returns:
             ask (float): Best ask on the Gemini market
         """
-        response = self.get_ticker()
-        ask = float(response['ask'])
-        return ask
+        return float(self.best_ask)
+
+    def thread_receive_socket_data(self):
+        while True:
+            try:
+                self.socket_data.append(self.client.get_market_book())
+                self.best_bid = self.client.get_bid()
+                self.best_ask = self.client.get_ask()
+            except ValueError:
+                pass
+            time.sleep(.08)
 
 
 class HitBtc(Exchange):
     """Subclass of Exchange for dealing with the HitBtc API"""
 
     def __init__(self):
+        self.name = "HitBtc"
         self.socket_data = list()
         self.best_bid = float()
         self.best_ask = float()
@@ -275,6 +287,7 @@ class Binance(Exchange):
     """Subclass of exchange which deals with the Binance API. This API only supports conversion to USDT."""
 
     def __init__(self):
+        self.name = "Binance"
         self.socket_data = list()
         self.best_ask = float()
         self.best_bid = float()
@@ -324,6 +337,7 @@ class Binance(Exchange):
 
 class Robinhood(Exchange):
     def __init__(self):
+        self.name = "Robinhood"
         self.totp = pyotp.TOTP("NBB2XJDL2IBBSYZG").now()
         r.login("Avbalsam", "Avrahamthegreat1@", mfa_code=self.totp)
 
@@ -387,6 +401,7 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
 
 class Coinbase(Exchange):
     def __init__(self):
+        self.name = "Coinbase"
         self.client = coinbaseWebsocketClient()
         self.client.start()
 

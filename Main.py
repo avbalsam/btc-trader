@@ -3,9 +3,10 @@ import time
 # from matplotlib import pyplot as plt
 from statistics import mean
 import robin_stocks.robinhood as r
+import csv
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), HitBtc(), Coinbase()]
+exchange_list = [Binance(), HitBtc(), Coinbase(), Gemini()]
 
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
@@ -25,29 +26,23 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
     # initialize values
     print("Initializing model...")
     while len(bid_lists) < init_length:
+        time.sleep(.1)
         try:
-            #exchange_list.reverse()
-            #bid_list = [x.get_bid() for x in exchange_list]
-            bid_list = list()
-            for x in exchange_list:
-                bid_list.append(x.get_bid())
-            #exchange_list.reverse()
-            #bid_list.reverse()
-            # ask_list = [x.get_ask() for x in exchange_list]
-            ask_list = []
-            # ask_list.append(mean(ask_list))
+            bid_list = [x.get_bid() for x in exchange_list]
+            ask_list = [x.get_ask() for x in exchange_list]
             bid_list.append(mean(bid_list))
             print(bid_list)
             ask_lists.append(ask_list)
             bid_lists.append(bid_list)
         except:
             print("Error collecting price.")
-        time.sleep(.1)
     bids_over_time = list()
+    asks_over_time = list()
     for el_num in range(0, len(bid_lists[0])):
         bid = [bid_list[el_num] for bid_list in bid_lists]
         bids_over_time.append(bid)
-        # plt.plot(bid, label="Exchange " + str(el_num))
+        #ask = [ask_list[el_num] for ask_list in ask_lists]
+        #asks_over_time.append(ask)
     diff_lists = [[bids_over_time[0][el] - bid_list[el] for el in range(0, len(bid_list))] for bid_list in
                   bids_over_time]
     avg_diffs = list()
@@ -139,7 +134,19 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
     print("With transaction fees of 0.075%, total profit was " + str(total_percent_gain) +
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
+    fields = [exchange.name for exchange in exchange_list]
+    fields.append("Mean")
+    with open("bid_data.txt", "w+") as f:
+        write = csv.writer(f)
+        write.writerow(fields)
+        write.writerows(bids_over_time)
 
-invest(100, 1000000, -75, -30, False)
+    #TODO fix creating asks_over_time
+    """
+    with open("ask_data.txt", "w+") as f:
+        write = csv.writer(f)
+        write.writerow(fields)
+        write.writerows(asks_over_time)"""
 
-r.logout()
+
+invest(100, 100000, -75, -30, False)

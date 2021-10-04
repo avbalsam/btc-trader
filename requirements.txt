@@ -7,3 +7,4 @@ bitmex==0.2.2
 python_binance==1.0.15
 cbpro==1.1.4
 hitbtc==1.0.4
+gemini_python==0.2.1
