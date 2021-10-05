@@ -197,7 +197,6 @@ class Gemini(Exchange):
     def __init__(self):
         self.name = "Gemini"
         self.client = GeminiOrderBook("btcusd")
-        #time.sleep(1)
         self.client.start()
         self.socket_data = list()
         self.best_bid = float()
@@ -245,7 +244,7 @@ class HitBtc(Exchange):
         self.best_ask = float()
         self.client = HitBTC()
         self.client.start()
-        time.sleep(1)
+        time.sleep(5)
         self.client.subscribe_ticker(symbol="BTCUSD")
         t = threading.Thread(target=self.thread_receive_socket_data)
         t.start()

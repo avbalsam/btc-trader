@@ -1,13 +1,31 @@
 from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood, Coinbase
-import time
+import time, os, csv
 # from matplotlib import pyplot as plt
 from statistics import mean
 import robin_stocks.robinhood as r
-import csv
+
+
+def write_to_csv(filename, fields, data):
+    """
+    Writes input data to csv file.
+
+    Args:
+        filename (str): Do not include .csv extension.
+        fields (list): First row of table.
+        data (list): Nested list. Each element represents one row.
+    """
+    with open("data/" + filename + ".csv", "w") as f:
+        write = csv.writer(f)
+        write.writerow(fields)
+        write.writerows(data)
+
 
 # initialize all exchanges using their constructors
 exchange_list = [Binance(), HitBtc(), Coinbase(), Gemini()]
 
+print("Waiting for websockets to connect...")
+while 0.0 in [e.get_bid() for e in exchange_list]:
+    pass
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
 # returns avg_diffs, a list of the expected differences in price between the first exchange and each other exchange
@@ -27,11 +45,12 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
     print("Initializing model...")
     while len(bid_lists) < init_length:
         time.sleep(.1)
+        if len(bid_lists) % int(init_length/10) == 0:
+            print("Initializing model... " + str(round(len(bid_lists)/init_length*100)) + "%")
         try:
             bid_list = [x.get_bid() for x in exchange_list]
             ask_list = [x.get_ask() for x in exchange_list]
             bid_list.append(mean(bid_list))
-            print(bid_list)
             ask_lists.append(ask_list)
             bid_lists.append(bid_list)
         except:
@@ -41,8 +60,11 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
     for el_num in range(0, len(bid_lists[0])):
         bid = [bid_list[el_num] for bid_list in bid_lists]
         bids_over_time.append(bid)
-        #ask = [ask_list[el_num] for ask_list in ask_lists]
-        #asks_over_time.append(ask)
+
+    #TODO make this for loop work
+    """for el_num in range(0, len(ask_lists[0])):
+        ask = [ask_list[el_num] for ask_list in ask_lists]
+        asks_over_time.append(ask)"""
     diff_lists = [[bids_over_time[0][el] - bid_list[el] for el in range(0, len(bid_list))] for bid_list in
                   bids_over_time]
     avg_diffs = list()
@@ -68,21 +90,18 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
         except:
             print("Error collecting prices")
             continue
-        # bid_list.sort(reverse=True)
-        # ask_list.sort()
         ask_list.append(mean(ask_list[1:]))
         bid_list.append(mean(bid_list[1:]))
-        # print(bid_list)
         ask_lists.append(ask_list)
         bid_lists.append(bid_list)
 
         # calculate deviation of each exchange from mean deviation
         for i in range(0, len(bid_list)):
             bids_over_time[i].append(bid_list[i])
+            #asks_over_time[i].append(ask_list[i])
             diff_lists[i].append(bids_over_time[0][-1] - bids_over_time[i][-1])
-            avg_diffs[i] = mean(diff_lists[i][-90:])
+            avg_diffs[i] = mean(diff_lists[i][-1*(init_length-20):])
             mean_diff[i].append(diff_lists[i][-1] - avg_diffs[i])
-        # print(avg_diffs)
 
         last_price = bids_over_time[0][-2]
         current_price = bids_over_time[0][-1]
@@ -122,31 +141,21 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
             #exchange_list[0].buy_market(.0001)
             buy_price = exchange_list[0].get_ask()
             print("Buy price: " + str(buy_price))
-        # print("Discrepancy count: " + str(buy_disc_count))
         if verbose_logging:
             print([round(diff[-1], 2) for diff in mean_diff])
             print("Price change: " + str(current_price-last_price))
-        # print("Robinhood price change: " + str(
-        #    (current_price - last_price) / current_price * 100) + "%. Robinhood price: " +
-        #      str(current_price))
-        # print("\n")
     print("Investment period concluded. A total of " + str(transaction_count) + " transactions were conducted.")
     print("With transaction fees of 0.075%, total profit was " + str(total_percent_gain) +
           "%. Without transaction fees, total profits would have been " + str(total_percent_gain_no_fees) + "%.")
 
     fields = [exchange.name for exchange in exchange_list]
     fields.append("Mean")
-    with open("bid_data.txt", "w+") as f:
-        write = csv.writer(f)
-        write.writerow(fields)
-        write.writerows(bids_over_time)
 
-    #TODO fix creating asks_over_time
-    """
-    with open("ask_data.txt", "w+") as f:
-        write = csv.writer(f)
-        write.writerow(fields)
-        write.writerows(asks_over_time)"""
+    write_to_csv("bid_data", fields, bids_over_time)
+
+    write_to_csv("diffs_data", fields, diff_lists)
+
+    write_to_csv("mean_diffs_data", fields, mean_diff)
 
 
-invest(100, 100000, -75, -30, False)
+invest(1000, 40000, -75, -30, False)
