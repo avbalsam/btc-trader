@@ -3,6 +3,7 @@ import time, os, csv
 # from matplotlib import pyplot as plt
 from statistics import mean
 import robin_stocks.robinhood as r
+import threading
 
 
 def write_to_csv(filename, fields, data):
@@ -25,7 +26,7 @@ exchange_list = [Binance(), HitBtc(), Coinbase(), Gemini()]
 
 print("Waiting for websockets to connect...")
 while 0.0 in [e.get_bid() for e in exchange_list]:
-    pass
+    print([e.get_bid() for e in exchange_list])
 
 # calls api "iterations" times and calculates expected difference between first exchange and each other exchange
 # returns avg_diffs, a list of the expected differences in price between the first exchange and each other exchange
@@ -143,6 +144,7 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
             print("Buy price: " + str(buy_price))
         if verbose_logging:
             print([round(diff[-1], 2) for diff in mean_diff])
+            print([round(bid, 2) for bid in bid_list])
             print("Price change: " + str(current_price-last_price))
     print("Investment period concluded. A total of " + str(transaction_count) + " transactions were conducted.")
     print("With transaction fees of 0.075%, total profit was " + str(total_percent_gain) +
@@ -158,4 +160,4 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
     write_to_csv("mean_diffs_data", fields, mean_diff)
 
 
-invest(1000, 40000, -75, -30, False)
+invest(100, 500, -75, -30, True)

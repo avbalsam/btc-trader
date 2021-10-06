@@ -290,17 +290,21 @@ class Binance(Exchange):
         self.socket_data = list()
         self.best_ask = float()
         self.best_bid = float()
+        self.connected = False
 
         # initialize websocket
-        twm = ThreadedWebsocketManager()
-        twm.start()
-        twm.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message, symbol="BTCUSDT")
+        self.client = ThreadedWebsocketManager()
+        self.client.start()
+        self.conn_key = self.client.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message,
+                                                                    symbol="BTCUSDT")
 
     def handle_ticker_socket_message(self, msg):
+        self.connected = True
         self.socket_data.append(msg)
         try:
             self.best_ask = msg['a']
             self.best_bid = msg['b']
+            #print("Binance socket message received: " + str(self.best_bid))
         except KeyError:
             pass
 
@@ -321,6 +325,20 @@ class Binance(Exchange):
             ask (float): Best ask on the Binance market
         """
         return float(self.best_ask)
+
+    def check_connection(self):
+        """Checks if websocket has received message recently"""
+        while True:
+            time.sleep(5)
+            if self.connected is False:
+                print("Binance socket disconnected...")
+                self.client.stop_socket(self.conn_key)
+                print("Restarting binance socket...")
+                self.conn_key = self.client.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message,
+                                                                            symbol="BTCUSDT")
+                time.sleep(5)
+            else:
+                self.connected = False
 
     def buy_market(self, quantity):
         self.client.order_market_buy(symbol="BTCUSDT", quantity=quantity)
