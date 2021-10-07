@@ -1,9 +1,7 @@
-from Exchange import Bitflyer, ItBit, Gemini, Bittrex, HitBtc, Binance, Robinhood, Coinbase
-import time, os, csv
-# from matplotlib import pyplot as plt
+import csv
+import time
 from statistics import mean
-import robin_stocks.robinhood as r
-import threading
+from Exchange import Gemini, HitBtc, Binance, Coinbase
 
 
 def write_to_csv(filename, fields, data):
@@ -57,4 +55,4 @@ print("Waiting for websockets to connect...")
 while 0.0 in [e.get_bid() for e in exchange_list]:
     pass
 
-get_historical_bids(18000)
+get_historical_bids(36000)
