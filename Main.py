@@ -190,5 +190,3 @@ def invest(init_length, invest_length, buy_discrepancy, sell_discrepancy, verbos
 
 #invest(100, 500, -75, -30, True)
 get_historical_bids(18000)
-
-print("done")
