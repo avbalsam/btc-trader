@@ -36,14 +36,17 @@ def plot(data):
         p.plot(row)
 
 
-print(read_csv("bid_data"))
-p.subplot(131)
-plot(read_csv("bid_data"))
+while True:
+    print(read_csv("bid_data"))
+    p.subplot(131)
+    plot(read_csv("bid_data"))
 
-p.subplot(132)
-plot(read_csv("diffs_data"))
+    p.subplot(132)
+    plot(read_csv("diffs_data"))
 
-p.subplot(133)
-plot(read_csv("mean_diffs_data"))
+    p.subplot(133)
+    plot(read_csv("mean_diffs_data"))
 
-p.show()
+    p.show()
+    p.clf()
+    p.close()

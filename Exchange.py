@@ -201,9 +201,10 @@ class Gemini(Exchange):
         self.socket_data = list()
         self.best_bid = float()
         self.best_ask = float()
-        time.sleep(1)
-        t = threading.Thread(target=self.thread_receive_socket_data)
-        t.start()
+        time.sleep(5)
+        self.worker_thread = threading.Thread(target=self.thread_receive_socket_data)
+        self.worker_thread.start()
+        print("Gemini socket connected...")
 
     def get_bid(self):
         """
@@ -226,12 +227,14 @@ class Gemini(Exchange):
     def thread_receive_socket_data(self):
         while True:
             try:
-                self.socket_data.append(self.client.get_market_book())
+                msg = self.client.get_market_book()
+                self.socket_data.append(msg)
+                # print("Gemini: " + str(msg))
                 self.best_bid = self.client.get_bid()
                 self.best_ask = self.client.get_ask()
+                time.sleep(.08)
             except ValueError:
                 pass
-            time.sleep(.08)
 
 
 class HitBtc(Exchange):
@@ -246,8 +249,9 @@ class HitBtc(Exchange):
         self.client.start()
         time.sleep(5)
         self.client.subscribe_ticker(symbol="BTCUSD")
-        t = threading.Thread(target=self.thread_receive_socket_data)
-        t.start()
+        self.worker_thread = threading.Thread(target=self.thread_receive_socket_data)
+        self.worker_thread.start()
+        print("HitBtc socket connected...")
 
     def get_bid(self):
         """
@@ -272,14 +276,13 @@ class HitBtc(Exchange):
             try:
                 data = self.client.recv()
                 ticker = data[2]
-                try:
-                    self.best_ask = ticker['ask']
-                    self.best_bid = ticker['bid']
-                    self.socket_data.append(ticker)
-                except:
-                    continue
-            except queue.Empty:
-                continue
+                # print("HitBtc: " + str(ticker))
+                self.best_ask = ticker['ask']
+                self.best_bid = ticker['bid']
+                self.socket_data.append(ticker)
+                time.sleep(.08)
+            except (queue.Empty, KeyError, TypeError):
+                pass
 
 
 class Binance(Exchange):
@@ -291,22 +294,35 @@ class Binance(Exchange):
         self.best_ask = float()
         self.best_bid = float()
         self.connected = False
+        self.stream_error = False
 
         # initialize websocket
         self.client = ThreadedWebsocketManager()
         self.client.start()
         self.conn_key = self.client.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message,
                                                                     symbol="BTCUSDT")
+        print("Binance socket connected...")
+
+    def restart_stream(self):
+        print("Restarting stream...")
+        self.client.stop_socket(self.conn_key)
+        time.sleep(2)
+        self.conn_key = self.client.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message,
+                                                                    symbol="BTCUSDT")
+        self.stream_error = False
 
     def handle_ticker_socket_message(self, msg):
         self.connected = True
         self.socket_data.append(msg)
+        #print("Binance: " + str(msg))
         try:
             self.best_ask = msg['a']
             self.best_bid = msg['b']
-            #print("Binance socket message received: " + str(self.best_bid))
+            # print("Binance socket message received: " + str(self.best_bid))
         except KeyError:
-            pass
+            if 'e' in msg and msg['e'] == 'error':
+                print("Binance socket error...")
+                self.stream_error = True
 
     def get_bid(self):
         """
@@ -329,7 +345,7 @@ class Binance(Exchange):
     def check_connection(self):
         """Checks if websocket has received message recently"""
         while True:
-            time.sleep(5)
+            time.sleep(2)
             if self.connected is False:
                 print("Binance socket disconnected...")
                 self.client.stop_socket(self.conn_key)
@@ -365,6 +381,7 @@ class Robinhood(Exchange):
     def get_ask(self):
         return float(r.get_crypto_quote("BTC", "ask_price"))
 
+
 """
 class Bitmex(Exchange):
     def __init__(self):
@@ -380,6 +397,7 @@ class Bitmex(Exchange):
         response = requests.get("https://www.bitmex.com/api/v1/orderBook/L2?symbol=xbt&depth=1").json()
         return response[1]['price']
 """
+
 
 class coinbaseWebsocketClient(cbpro.WebsocketClient):
     def __init__(self):
@@ -406,6 +424,7 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
 
     def on_message(self, msg):
         self.socket_data.append(msg)
+        # print("Coinbase: " + str(msg))
         try:
             self.best_bid = msg['best_bid']
             self.best_ask = msg['best_ask']
@@ -421,6 +440,7 @@ class Coinbase(Exchange):
         self.name = "Coinbase"
         self.client = coinbaseWebsocketClient()
         self.client.start()
+        print("Coinbase socket connected...")
 
     def get_bid(self):
         return float(self.client.best_bid)
