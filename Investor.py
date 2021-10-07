@@ -1,16 +1,50 @@
 class Investor:
-    def __init__(self, buy_criteria, sell_criteria):
+    def __init__(self, name, buy_criteria, sell_criteria):
         """
         Args:
-            buy_criteria (dict): {discrepancy_count: int(), discrepancy_size: int()}
-            sell_criteria (dict): {discrepancy_count: int(), discrepancy_size: int()}
+            name (str): Name of investor
+            buy_criteria (dict): {disc_count: int(), disc_size: float()}
+                disc_count (int): Number of discrepancies needed for exchange to buy.
+                disc_size (float): Size of discrepancy needed to be considered a discrepancy.
+            sell_criteria (dict): {disc_count: int(), disc_size: int()}
+                disc_count (int): Number of discrepancies needed for exchange to sell.
+                disc_size (float): Size of discrepancy needed to be considered a discrepancy.
         """
-        self.holdings = {'usdt': 100, 'btc': 0}
+        self.name = name
+        self.holdings = {'usdt': 1000, 'btc': 0}
+        self.holding_crypto = False
         self.buy_criteria = buy_criteria
         self.sell_criteria = sell_criteria
         self.crypto_holdings = 0
 
-    def usdt_to_btc(self, ask_price, commission):
+    def invest(self, mean_diff, ask_price, bid_price, commission=.00075):
+        """
+        Check investor strategy and current price discrepancies, and decide whether investor will buy, sell, or hold.
+
+        Args:
+            mean_diff (list): Current price discrepancies for each exchange (same as in Main.py)
+            ask_price (float): Current ask price of bitcoin
+            bid_price (float): Current bid price of bitcoin
+            commission (float): Current commission based on trading volume
+        """
+        if self.holding_crypto is False:
+            disc_count = 0
+            for m in mean_diff:
+                if m[-1] > self.buy_criteria['disc_size']:
+                    disc_count += 1
+            if disc_count >= self.buy_criteria['disc_count']:
+                self.usdt_to_btc(ask_price, commission)
+                self.holding_crypto = True
+        else:
+            disc_count = 0
+            for m in mean_diff:
+                if m[-1] < self.sell_criteria['disc_size']:
+                    disc_count += 1
+            if disc_count >= self.sell_criteria['disc_count']:
+                self.btc_to_usdt(bid_price, commission)
+                self.holding_crypto = False
+
+    def usdt_to_btc(self, ask_price, commission=.00075):
         """
         Simulate investor trading usdt for btc.
 
@@ -22,10 +56,10 @@ class Investor:
         btc_value = (usdt - usdt * commission) / ask_price
         self.holdings['usdt'] -= usdt
         self.holdings['btc'] += btc_value
-        print(str(usdt) + " dollars in USDT spent to buy " + str(btc_value) + " bitcoins.\nTotal holdings: " + str(
-            self.holdings))
+        print(self.name + " spent " + str(usdt) + " dollars in USDT to buy " + str(btc_value) +
+              "bitcoins.\nTotal holdings: " + str(self.holdings))
 
-    def btc_to_usdt(self, bid_price, commission):
+    def btc_to_usdt(self, bid_price, commission=.00075):
         """
         Simulate investor trading btc for usdt.
 
@@ -37,8 +71,8 @@ class Investor:
         usdt_value = (btc - btc * commission) * bid_price
         self.holdings['btc'] -= btc
         self.holdings['usdt'] += usdt_value
-        print(str(btc) + " bitcoins spent to buy " + str(usdt_value) + " USDT.\nTotal holdings: " + str(
-            self.holdings))
+        print(self.name + " spent " + str(btc) + " bitcoins to buy " + str(usdt_value) + " USDT.\nTotal holdings: " +
+              str(self.holdings))
 
     def get_balance(self, symbol):
         """
