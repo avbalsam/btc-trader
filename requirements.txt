@@ -1,9 +1,5 @@
 requests==2.26.0
 urllib3==1.26.7
-robin_stocks==2.0.4
-pyotp==2.6.0
-bravado==11.0.3
-bitmex==0.2.2
 python-binance==1.0.15
 cbpro==1.1.4
 hitbtc==1.0.4
