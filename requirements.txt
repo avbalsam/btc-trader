@@ -1,3 +1,5 @@
 cbpro==1.1.4
 hitbtc==1.0.4
 matplotlib~=3.4.3
+gemini-python==0.2.1
+python-binance==1.0.15
