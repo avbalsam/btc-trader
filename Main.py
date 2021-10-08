@@ -26,7 +26,7 @@ def write_to_csv(filename, fields, data):
 # initialize all exchanges using their constructors
 exchange_list = [Binance(), HitBtc(), Coinbase(), Gemini()]
 
-investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 50}, {"disc_count": 3, "disc_size": 0}),
+investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 65}, {"disc_count": 3, "disc_size": 0}),
              Investor("Leonard", {"disc_count": 3, "disc_size": 60}, {"disc_count": 3, "disc_size": -5}),
              Investor("Amanda", {"disc_count": 2, "disc_size": 65}, {"disc_count": 3, "disc_size": 0})]
 
@@ -38,11 +38,13 @@ def get_historical_bids(test_length):
     avg_diff = [float() for i in range(0,len(exchange_list))]
     mean_diff = [list() for i in range(0,len(exchange_list))]
     for x in range(0, test_length):
-        time.sleep(.1)
+        time.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
         if x % 1000 == 0 and x != 0:
             print(str(x) + " loops completed. Writing collected data to csv...")
             print(bids)
+            for investor in investors:
+                print(investor.name + " transaction history: " + investor.transaction_history)
             write_to_csv("bid_data", fields, historical_bids)
             write_to_csv("diffs_data", fields, diff_lists)
             write_to_csv("mean_diffs_data", fields, mean_diff)
