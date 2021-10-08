@@ -141,6 +141,7 @@ class Binance(Exchange):
         self.conn_key = self.client.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message,
                                                                     symbol="BTCUSDT")
         self.stream_error = False
+        print("Binance socket restarted")
 
     def handle_ticker_socket_message(self, msg):
         self.connected = True
