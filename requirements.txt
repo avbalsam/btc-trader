@@ -6,3 +6,4 @@ python-binance==1.0.15
 websocket==0.2.1
 websockets==10.0
 websocket-client==1.2.1
+coinbase==2.1.0
