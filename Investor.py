@@ -16,6 +16,7 @@ class Investor:
         self.buy_criteria = buy_criteria
         self.sell_criteria = sell_criteria
         self.crypto_holdings = 0
+        self.transaction_history = list()
 
     def invest(self, mean_diff, ask_price, bid_price, commission=.00075):
         """
@@ -58,6 +59,7 @@ class Investor:
         self.holdings['btc'] += btc_value
         print(self.name + " spent " + str(usdt) + " dollars in USDT to buy " + str(btc_value) +
               "bitcoins.\nTotal holdings: " + str(self.holdings))
+        self.transaction_history.append({'transaction': 'usdt_to_btc', 'usdt': usdt, 'btc': btc_value})
 
     def btc_to_usdt(self, bid_price, commission=.00075):
         """
@@ -73,6 +75,7 @@ class Investor:
         self.holdings['usdt'] += usdt_value
         print(self.name + " spent " + str(btc) + " bitcoins to buy " + str(usdt_value) + " USDT.\nTotal holdings: " +
               str(self.holdings))
+        self.transaction_history.append({'transaction': 'btc_to_usdt', 'usdt': usdt_value, 'btc': btc})
 
     def get_balance(self, symbol):
         """
@@ -85,3 +88,13 @@ class Investor:
             balance (int): Current balance of specified asset
         """
         return self.holdings[symbol]
+
+    def get_transaction_history(self):
+        """
+        Get transaction history of trading bot
+
+        Returns:
+            transaction_history (list): History of all transactions made by bot.
+                {'transaction': 'btc_to_usdt' or 'usdt_to_btc', 'usdt': usdt bought /sold, 'btc': btc bought / sold}
+        """
+        return self.transaction_history
