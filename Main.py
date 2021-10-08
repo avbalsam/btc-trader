@@ -63,4 +63,4 @@ print("Waiting for websockets to connect...")
 while 0.0 in [e.get_bid() for e in exchange_list]:
     pass
 
-get_historical_bids(500)
+get_historical_bids(72000)
