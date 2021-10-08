@@ -40,7 +40,7 @@ def get_historical_bids(test_length):
     for x in range(0, test_length):
         time.sleep(.1)
         bids = [e.get_bid() for e in exchange_list]
-        if x % 100 == 0 and x != 0:
+        if x % 1000 == 0 and x != 0:
             print(str(x) + " loops completed. Writing collected data to csv...")
             print(bids)
             write_to_csv("bid_data", fields, historical_bids)

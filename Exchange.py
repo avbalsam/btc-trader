@@ -1,13 +1,11 @@
-import requests
-import json
-import robin_stocks.robinhood as r
-import pyotp
-from binance import Client as binance_client
-from binance import ThreadedWebsocketManager
+import queue
+import threading
+import time
+
 import cbpro
-import threading, time, queue
-from hitbtc import HitBTC
+from binance import ThreadedWebsocketManager
 from gemini import GeminiOrderBook
+from hitbtc import HitBTC
 
 
 # Class which handles exchanges
