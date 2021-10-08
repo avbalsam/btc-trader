@@ -146,11 +146,9 @@ class Binance(Exchange):
     def handle_ticker_socket_message(self, msg):
         self.connected = True
         self.socket_data.append(msg)
-        # print("Binance: " + str(msg))
         try:
             self.best_ask = msg['a']
             self.best_bid = msg['b']
-            # print("Binance socket message received: " + str(self.best_bid))
         except KeyError:
             if 'e' in msg and msg['e'] == 'error':
                 print("Binance socket error...")
