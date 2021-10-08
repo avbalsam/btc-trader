@@ -24,7 +24,7 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), HitBtc(), Coinbase()]
+exchange_list = [Binance(), HitBtc(), Gemini()]
 
 investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 65}, {"disc_count": 3, "disc_size": 0}),
              Investor("Leonard", {"disc_count": 3, "disc_size": 60}, {"disc_count": 3, "disc_size": -5}),
