@@ -24,7 +24,7 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), HitBtc(), Gemini()]
+exchange_list = [Binance(), HitBtc(), Coinbase(), Gemini()]
 
 investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 65}, {"disc_count": 3, "disc_size": 0}),
              Investor("Leonard", {"disc_count": 3, "disc_size": 60}, {"disc_count": 3, "disc_size": -5}),
@@ -64,5 +64,7 @@ def get_historical_bids(test_length):
 print("Waiting for websockets to connect...")
 while 0.0 in [e.get_bid() for e in exchange_list]:
     pass
+
+print("Websockets connected. Starting investment period...")
 
 get_historical_bids(72000)
