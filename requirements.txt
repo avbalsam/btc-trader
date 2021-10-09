@@ -5,7 +5,7 @@ gemini-python==0.2.1
 python-binance==1.0.15
 websocket-client==1.2.1
 websockets==10.0
-websocket==0.43
+websocket==0.2.1
 aiohttp==3.7.4.post
 yarl==1.7.0
 ujson==4.2.0
