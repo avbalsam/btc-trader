@@ -2,7 +2,7 @@ import queue
 import threading
 import time
 
-import cbpro
+#import cbpro
 from binance import ThreadedWebsocketManager
 from gemini import GeminiOrderBook
 from hitbtc import HitBTC
@@ -197,7 +197,7 @@ class Binance(Exchange):
                                                  str(num_days) + "day ago UTC")
         return data
 
-
+"""
 class coinbaseWebsocketClient(cbpro.WebsocketClient):
     def __init__(self):
         super().__init__()
@@ -205,15 +205,15 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
         self.best_ask = None
         self.best_bid = None
 
-    """
+    
     Class to handle coinbase websocket events
-    """
+    
 
     def on_open(self):
-        """
+        
         Method inherited from cbpro.WebsocketClient class which is run immediately before
         establishing websocket connection
-        """
+        
         self.url = "wss://ws-feed.pro.coinbase.com/"
         self.products = ["BTC-USD"]
         self.channels = ["ticker"]
@@ -246,3 +246,4 @@ class Coinbase(Exchange):
 
     def get_ask(self):
         return float(self.client.best_ask)
+"""
