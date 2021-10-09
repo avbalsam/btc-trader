@@ -73,6 +73,7 @@ class HitBtc(Exchange):
 
     def __init__(self):
         self.name = "HitBtc"
+        self.stream_error = False
         self.socket_data = list()
         self.best_bid = float()
         self.best_ask = float()
@@ -102,18 +103,32 @@ class HitBtc(Exchange):
         """
         return float(self.best_ask)
 
+    def restart_stream(self):
+        print("Restarting HitBtc socket...")
+        self.client.stop()
+        time.sleep(2)
+        self.client.subscribe_ticker(symbol="BTCUSD")
+        print("HitBtc socket restarted")
+
     def thread_receive_socket_data(self):
         while True:
             try:
                 data = self.client.recv()
+                #print(data)
+            except queue.Empty:
+                time.sleep(.01)
+                continue
+            try:
                 ticker = data[2]
-                # print("HitBtc: " + str(ticker))
                 self.best_ask = ticker['ask']
                 self.best_bid = ticker['bid']
                 self.socket_data.append(ticker)
                 time.sleep(.08)
-            except (queue.Empty, KeyError, TypeError):
-                pass
+            except (KeyError, TypeError):
+                if data[0] != 'Response':
+                    print("HitBtc stream error...")
+                    self.stream_error = True
+
 
 
 class Binance(Exchange):
@@ -124,7 +139,6 @@ class Binance(Exchange):
         self.socket_data = list()
         self.best_ask = float()
         self.best_bid = float()
-        self.connected = False
         self.stream_error = False
 
         # initialize websocket
@@ -172,20 +186,6 @@ class Binance(Exchange):
         """
         return float(self.best_ask)
 
-    def check_connection(self):
-        """Checks if websocket has received message recently"""
-        while True:
-            time.sleep(2)
-            if self.connected is False:
-                print("Binance socket disconnected...")
-                self.client.stop_socket(self.conn_key)
-                print("Restarting binance socket...")
-                self.conn_key = self.client.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message,
-                                                                            symbol="BTCUSDT")
-                time.sleep(5)
-            else:
-                self.connected = False
-
     def buy_market(self, quantity):
         self.client.order_market_buy(symbol="BTCUSDT", quantity=quantity)
 
@@ -201,9 +201,10 @@ class Binance(Exchange):
 class coinbaseWebsocketClient(cbpro.WebsocketClient):
     def __init__(self):
         super().__init__()
-        self.socket_data = None
-        self.best_ask = None
-        self.best_bid = None
+        self.socket_data = list()
+        self.best_bid = float()
+        self.best_ask = float()
+        self.stream_error = False
     """
     Class to handle coinbase websocket events
     """
@@ -216,9 +217,6 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
         self.url = "wss://ws-feed.pro.coinbase.com/"
         self.products = ["BTC-USD"]
         self.channels = ["ticker"]
-        self.socket_data = list()
-        self.best_bid = float()
-        self.best_ask = float()
 
     def on_message(self, msg):
         self.socket_data.append(msg)
@@ -227,7 +225,10 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
             self.best_bid = msg['best_bid']
             self.best_ask = msg['best_ask']
         except KeyError:
-            pass
+            print("Coinbase stream error...")
+            print(msg)
+            if msg['type'] != 'subscriptions':
+                self.stream_error = True
 
     def on_close(self):
         print("Coinbase websocket closed!")
@@ -245,3 +246,11 @@ class Coinbase(Exchange):
 
     def get_ask(self):
         return float(self.client.best_ask)
+
+    def restart_stream(self):
+        print("Restarting coinbase socket...")
+        self.client.close()
+        time.sleep(2)
+        self.client = coinbaseWebsocketClient()
+        self.client.start()
+        print("Coinbase socket restarted")

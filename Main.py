@@ -40,6 +40,7 @@ def get_historical_bids(test_length):
     for x in range(0, test_length):
         time.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
+        print(bid)
         if x % 1000 == 0 and x != 0:
             print(str(x) + " loops completed. Writing collected data to csv...")
             print(bids)
@@ -57,13 +58,19 @@ def get_historical_bids(test_length):
         if exchange_list[0].stream_error:
             exchange_list[0].restart_stream()
             continue
+        if exchange_list[1].stream_error:
+            exchange_list[1].restart_stream()
+            continue
+        if exchange_list[2].client.stream_error:
+            exchange_list[2].restart_stream()
+            continue
         for investor in investors:
             investor.invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
 
 
 print("Waiting for websockets to connect...")
 while 0.0 in [e.get_bid() for e in exchange_list]:
-    print([e.get_bid() for e in exchange_list])
+    #print([e.get_bid() for e in exchange_list])
     time.sleep(.1)
 
 print("Websockets connected. Starting investment period...")
