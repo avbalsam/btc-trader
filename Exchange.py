@@ -198,6 +198,7 @@ class Binance(Exchange):
         return data
 
 
+"""
 class coinbaseWebsocketClient(cbpro.WebsocketClient):
     def __init__(self):
         super().__init__()
@@ -246,3 +247,4 @@ class Coinbase(Exchange):
 
     def get_ask(self):
         return float(self.client.best_ask)
+"""
