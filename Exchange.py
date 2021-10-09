@@ -2,7 +2,6 @@ import queue
 import threading
 import time
 
-import cbpro
 from binance import ThreadedWebsocketManager
 from gemini import GeminiOrderBook
 from hitbtc import HitBTC
