@@ -45,3 +45,4 @@ attrs==21.2.0
 atomicwrites==1.4.0
 async-timeout==3.0.1
 aiohttp== 3.7.4post
+backports.ssl-match-hostname==3.7.0.1
