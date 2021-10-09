@@ -64,6 +64,7 @@ def get_historical_bids(test_length):
 print("Waiting for websockets to connect...")
 while 0.0 in [e.get_bid() for e in exchange_list]:
     print([e.get_bid() for e in exchange_list])
+    time.sleep(.1)
 
 print("Websockets connected. Starting investment period...")
 
