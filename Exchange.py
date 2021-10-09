@@ -211,10 +211,10 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
     """
 
     def on_open(self):
-        """
+        #"""
         Method inherited from cbpro.WebsocketClient class which is run immediately before
         establishing websocket connection
-        """
+        #"""
         self.url = "wss://ws-feed.pro.coinbase.com/"
         self.products = ["BTC-USD"]
         self.channels = ["ticker"]
