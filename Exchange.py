@@ -225,10 +225,10 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
             self.best_bid = msg['best_bid']
             self.best_ask = msg['best_ask']
         except KeyError:
-            print("Coinbase stream error...")
-            print(msg)
             if msg['type'] != 'subscriptions':
                 self.stream_error = True
+                print("Coinbase stream error...")
+                print(msg)
 
     def on_close(self):
         print("Coinbase websocket closed!")
