@@ -1,6 +1,7 @@
 import csv
 import time
 from statistics import mean
+
 from Exchange import Binance, HitBtc, Coinbase, Gemini
 from Investor import Investor
 
@@ -41,6 +42,7 @@ def get_historical_bids(test_length):
         time.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
         if x % 1000 == 0:
+            print("Current time: " + time.ctime())
             print(str(x) + " loops completed. Writing collected data to csv...")
             print(bids)
             print(avg_diff)
@@ -49,11 +51,14 @@ def get_historical_bids(test_length):
             write_to_csv("bid_data", fields, historical_bids)
             write_to_csv("diffs_data", fields, diff_lists)
             write_to_csv("mean_diffs_data", fields, mean_diff)
-            write_to_csv("investors_data", investors, [investor.transaction_history for investor in investors])
+            write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
         for e in range(0, len(exchange_list)):
             historical_bids[e].append(exchange_list[e].get_bid())
             diff_lists[e].append(exchange_list[e].get_bid() - exchange_list[0].get_bid())
-            avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
+            if x <= 10000:
+                avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
+            else:
+                avg_diff[e] = mean(historical_bids[e][-10000:])
             mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
         # TODO Create restart stream method for every exchange and check each one with for loop
         if exchange_list[0].stream_error:

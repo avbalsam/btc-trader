@@ -55,17 +55,28 @@ class Gemini(Exchange):
         """
         return float(self.best_ask)
 
+    def restart_socket(self):
+        print("Restarting Gemini socket...")
+        self.client.close()
+        time.sleep(2)
+        self.client = GeminiOrderBook("btcusd")
+        self.client.start()
+        print("Gemini socket restarted")
+
     def thread_receive_socket_data(self):
         while True:
+            msg = self.client.get_market_book()
+            self.socket_data = msg
             try:
-                msg = self.client.get_market_book()
-                self.socket_data.append(msg)
-                # print("Gemini: " + str(msg))
                 self.best_bid = self.client.get_bid()
                 self.best_ask = self.client.get_ask()
                 time.sleep(.08)
             except ValueError:
                 pass
+            except KeyError:
+                print("Gemini socket error...")
+                print(msg)
+                self.restart_socket()
 
 
 class HitBtc(Exchange):
@@ -109,12 +120,12 @@ class HitBtc(Exchange):
         time.sleep(2)
         self.client.subscribe_ticker(symbol="BTCUSD")
         print("HitBtc socket restarted")
+        self.stream_error = False
 
     def thread_receive_socket_data(self):
         while True:
             try:
                 data = self.client.recv()
-                #print(data)
             except queue.Empty:
                 time.sleep(.01)
                 continue
@@ -254,3 +265,4 @@ class Coinbase(Exchange):
         self.client = coinbaseWebsocketClient()
         self.client.start()
         print("Coinbase socket restarted")
+        self.client.stream_error = False
