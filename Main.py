@@ -55,10 +55,7 @@ def get_historical_bids(test_length):
         for e in range(0, len(exchange_list)):
             historical_bids[e].append(exchange_list[e].get_bid())
             diff_lists[e].append(exchange_list[e].get_bid() - exchange_list[0].get_bid())
-            if x <= 10000:
-                avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
-            else:
-                avg_diff[e] = mean(historical_bids[e][-10000:])
+            avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
             mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
         # TODO Create restart stream method for every exchange and check each one with for loop
         if exchange_list[0].stream_error:
