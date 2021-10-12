@@ -1,6 +1,6 @@
 import csv
 import time
-from statistics import mean
+import numpy as np
 
 from Exchange import Binance, HitBtc, Coinbase, Gemini
 from Investor import Investor
@@ -25,11 +25,12 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), HitBtc(), Coinbase(), Gemini()]
+exchange_list = [Binance(), HitBtc(), Gemini()]
 
-investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 65}, {"disc_count": 3, "disc_size": 0}),
-             Investor("Leonard", {"disc_count": 3, "disc_size": 60}, {"disc_count": 3, "disc_size": -5}),
-             Investor("Amanda", {"disc_count": 2, "disc_size": 65}, {"disc_count": 3, "disc_size": 0})]
+investors = [Investor("Maxwell", {"disc_count": 2, "disc_size": 70}, {"disc_count": 2, "disc_size": -5}),
+             Investor("Leonard", {"disc_count": 2, "disc_size": 55}, {"disc_count": 2, "disc_size": -5}),
+             Investor("Amanda", {"disc_count": 2, "disc_size": 75}, {"disc_count": 2, "disc_size": 0}),
+             Investor("Ezra", {"disc_count": 2, "disc_size": 60}, {"disc_count": 2, "disc_size": -10})]
 
 
 def get_historical_bids(test_length):
@@ -55,7 +56,10 @@ def get_historical_bids(test_length):
         for e in range(0, len(exchange_list)):
             historical_bids[e].append(exchange_list[e].get_bid())
             diff_lists[e].append(exchange_list[e].get_bid() - exchange_list[0].get_bid())
-            avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
+            if x <= 75000:
+                avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
+            else:
+                avg_diff[e] = np.mean(diff_lists[e][-75000:])
             mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
         # TODO Create restart stream method for every exchange and check each one with for loop
         if exchange_list[0].stream_error:
@@ -64,9 +68,9 @@ def get_historical_bids(test_length):
         if exchange_list[1].stream_error:
             exchange_list[1].restart_stream()
             continue
-        if exchange_list[2].client.stream_error:
-            exchange_list[2].restart_stream()
-            continue
+        #if exchange_list[2].client.stream_error:
+        #    exchange_list[2].restart_stream()
+        #    continue
         for investor in investors:
             investor.invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
 
@@ -78,4 +82,4 @@ while 0.0 in [e.get_bid() for e in exchange_list]:
 
 print("Websockets connected. Starting investment period...")
 
-get_historical_bids(100000)
+get_historical_bids(500000)
