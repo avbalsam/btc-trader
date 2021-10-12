@@ -61,7 +61,7 @@ class Investor:
         self.holdings['usdt'] -= usdt
         self.holdings['btc'] += btc_value
         print(self.name + " spent " + str(usdt) + " dollars in USDT to buy " + str(btc_value) +
-              "bitcoins.\nTotal holdings: " + str(self.holdings))
+              " bitcoins.\nTotal holdings: " + str(self.holdings))
         self.transaction_history.append({'time': time.ctime(), 'transaction': 'usdt_to_btc', 'usdt': usdt, 'btc': btc_value})
 
     def btc_to_usdt(self, bid_price, commission=.00075):
