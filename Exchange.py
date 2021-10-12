@@ -243,6 +243,7 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
 
     def on_close(self):
         print("Coinbase websocket closed!")
+        self.stream_error = True
 
 
 class Coinbase(Exchange):
