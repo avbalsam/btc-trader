@@ -25,6 +25,7 @@ class Exchange:
     def get_stream_error(self):
         pass
 
+
 class Gemini(Exchange):
     """Subclass of Exchange which handles the Gemini API"""
 
