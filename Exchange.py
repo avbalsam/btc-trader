@@ -162,6 +162,7 @@ class Binance(Exchange):
     def __init_(self, api_key, api_secret):
         self.api_key = api_key
         self.api_secret = api_secret
+        self.__init__()
 
     def restart_stream(self):
         print("Restarting stream...")
