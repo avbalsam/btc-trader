@@ -11,15 +11,15 @@ from hitbtc import HitBTC
 
 # Class which handles exchanges
 class Exchange:
-    """Interface implemented by the Exchange class"""
-
-    def api_call(self, path=''):
-        pass
+    """Interface implemented by all Exchanges"""
 
     def get_bid(self):
         pass
 
     def get_ask(self):
+        pass
+
+    def restart_socket(self):
         pass
 
 
@@ -57,6 +57,7 @@ class Gemini(Exchange):
         return float(self.best_ask)
 
     def restart_socket(self):
+        """Restart Gemini socket by closing and creating new connection"""
         print("Restarting Gemini socket...")
         self.client.close()
         time.sleep(2)
@@ -116,6 +117,7 @@ class HitBtc(Exchange):
         return float(self.best_ask)
 
     def restart_socket(self):
+        """Restart HitBtc socket by closing and creating new connection"""
         print("Restarting HitBtc socket...")
         self.client.stop()
         time.sleep(2)
@@ -147,6 +149,7 @@ class Binance(Exchange):
     """Subclass of exchange which deals with the Binance API. This API only supports conversion to USDT."""
 
     def __init__(self):
+        """Initialize instance of Binance class without an api key"""
         self.name = "Binance"
         self.socket_data = list()
         self.best_ask = float()
@@ -161,14 +164,20 @@ class Binance(Exchange):
         print("Binance socket connected...")
 
     def __init_(self, api_key, api_secret):
+        """Initialize instance of Binance class using api key
+
+        Args:
+            api_key: Public key for binance api with read and transact permissions
+            api_secret: Secret key for binance api with read and transact permissions
+        """
         self.api_key = api_key
         self.api_secret = api_secret
         self.__init__()
         self.test_client = Client(api_key, api_secret, testnet=True)
 
     def restart_socket(self):
-        """Restarts Binance stream"""
-        print("Restarting stream...")
+        """Restarts Binance websocket, by closing and creating new connection"""
+        print("Restarting binance socket...")
         self.client.stop_socket(self.conn_key)
         time.sleep(2)
         self.conn_key = self.client.start_symbol_book_ticker_socket(callback=self.handle_ticker_socket_message,
