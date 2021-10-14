@@ -4,6 +4,7 @@ import time
 
 import cbpro
 from binance import ThreadedWebsocketManager
+from binance import Client
 from gemini import GeminiOrderBook
 from hitbtc import HitBTC
 
@@ -114,7 +115,7 @@ class HitBtc(Exchange):
         """
         return float(self.best_ask)
 
-    def restart_stream(self):
+    def restart_socket(self):
         print("Restarting HitBtc socket...")
         self.client.stop()
         time.sleep(2)
@@ -163,8 +164,10 @@ class Binance(Exchange):
         self.api_key = api_key
         self.api_secret = api_secret
         self.__init__()
+        self.test_client = Client(api_key, api_secret, testnet=True)
 
-    def restart_stream(self):
+    def restart_socket(self):
+        """Restarts Binance stream"""
         print("Restarting stream...")
         self.client.stop_socket(self.conn_key)
         time.sleep(2)
@@ -174,7 +177,6 @@ class Binance(Exchange):
         print("Binance socket restarted")
 
     def handle_ticker_socket_message(self, msg):
-        self.connected = True
         self.socket_data.append(msg)
         try:
             self.best_ask = msg['a']
@@ -203,13 +205,13 @@ class Binance(Exchange):
         return float(self.best_ask)
 
     def buy_market(self, quantity):
-        self.client.order_market_buy(symbol="BTCUSDT", quantity=quantity)
+        self.test_client.order_market_buy(symbol="BTCUSDT", quantity=quantity)
 
     def sell_market(self, quantity):
-        self.client.order_market_sell(symbol="BTCUSDT", quantity=quantity)
+        self.test_client.order_market_sell(symbol="BTCUSDT", quantity=quantity)
 
     def get_historical_klines(self, num_days):
-        data = self.client.get_historical_klines("BTCUSDT", self.client.KLINE_INTERVAL_1MINUTE,
+        data = self.test_client.get_historical_klines("BTCUSDT", self.test_client.KLINE_INTERVAL_1MINUTE,
                                                  str(num_days) + "day ago UTC")
         return data
 
@@ -265,7 +267,7 @@ class Coinbase(Exchange):
     def get_ask(self):
         return float(self.client.best_ask)
 
-    def restart_stream(self):
+    def restart_socket(self):
         print("Restarting coinbase socket...")
         self.client.close()
         time.sleep(2)

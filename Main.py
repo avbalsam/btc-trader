@@ -63,13 +63,13 @@ def get_historical_bids(test_length):
             mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
         # TODO Create restart stream method for every exchange and check each one with for loop
         if exchange_list[0].stream_error:
-            exchange_list[0].restart_stream()
+            exchange_list[0].restart_socket()
             continue
         if exchange_list[1].stream_error:
-            exchange_list[1].restart_stream()
+            exchange_list[1].restart_socket()
             continue
         if exchange_list[2].client.stream_error:
-            exchange_list[2].restart_stream()
+            exchange_list[2].restart_socket()
             continue
         if x > 20000:
             for investor in investors:
