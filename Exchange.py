@@ -159,6 +159,10 @@ class Binance(Exchange):
                                                                     symbol="BTCUSDT")
         print("Binance socket connected...")
 
+    def __init_(self, api_key, api_secret):
+        self.api_key = api_key
+        self.api_secret = api_secret
+
     def restart_stream(self):
         print("Restarting stream...")
         self.client.stop_socket(self.conn_key)
@@ -217,9 +221,6 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
         self.best_ask = float()
         self.stream_error = False
 
-    def __init_(self, api_key, api_secret):
-        self.api_key = api_key
-        self.api_secret = api_secret
     """
     Class to handle coinbase websocket events
     """
