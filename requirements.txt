@@ -2,3 +2,5 @@ gemini_python==0.2.1
 hitbtc==1.0.4
 python_binance==1.0.15
 cbpro==1.1.4
+websocket-client==0.40.0
+numpy
