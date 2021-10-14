@@ -144,7 +144,6 @@ class HitBtc(Exchange):
                     self.stream_error = True
 
 
-
 class Binance(Exchange):
     """Subclass of exchange which deals with the Binance API. This API only supports conversion to USDT."""
 
@@ -221,11 +220,11 @@ class Binance(Exchange):
 
     def get_historical_klines(self, num_days):
         data = self.test_client.get_historical_klines("BTCUSDT", self.test_client.KLINE_INTERVAL_1MINUTE,
-                                                 str(num_days) + "day ago UTC")
+                                                      str(num_days) + "day ago UTC")
         return data
 
 
-class coinbaseWebsocketClient(cbpro.WebsocketClient):
+class CoinbaseWebsocketClient(cbpro.WebsocketClient):
     def __init__(self):
         super().__init__()
         self.socket_data = list()
@@ -266,7 +265,7 @@ class coinbaseWebsocketClient(cbpro.WebsocketClient):
 class Coinbase(Exchange):
     def __init__(self):
         self.name = "Coinbase"
-        self.client = coinbaseWebsocketClient()
+        self.client = CoinbaseWebsocketClient()
         self.client.start()
         print("Coinbase socket connected...")
 
@@ -280,7 +279,7 @@ class Coinbase(Exchange):
         print("Restarting coinbase socket...")
         self.client.close()
         time.sleep(2)
-        self.client = coinbaseWebsocketClient()
+        self.client = CoinbaseWebsocketClient()
         self.client.start()
         print("Coinbase socket restarted")
         self.client.stream_error = False
