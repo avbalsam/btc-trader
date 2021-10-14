@@ -22,6 +22,8 @@ class Exchange:
     def restart_socket(self):
         pass
 
+    def get_stream_error(self):
+        pass
 
 class Gemini(Exchange):
     """Subclass of Exchange which handles the Gemini API"""
@@ -79,6 +81,9 @@ class Gemini(Exchange):
                 print("Gemini socket error...")
                 print(msg)
                 self.restart_socket()
+
+    def get_stream_error(self):
+        return self.stream_error
 
 
 class HitBtc(Exchange):
@@ -142,6 +147,9 @@ class HitBtc(Exchange):
                 if data[0] != 'Response':
                     print("HitBtc stream error...")
                     self.stream_error = True
+
+    def get_stream_error(self):
+        return self.stream_error
 
 
 class Binance(Exchange):
@@ -212,6 +220,9 @@ class Binance(Exchange):
         """
         return float(self.best_ask)
 
+    def get_stream_error(self):
+        return self.stream_error
+
     def buy_market(self, quantity):
         self.test_client.order_market_buy(symbol="BTCUSDT", quantity=quantity)
 
@@ -222,6 +233,7 @@ class Binance(Exchange):
         data = self.test_client.get_historical_klines("BTCUSDT", self.test_client.KLINE_INTERVAL_1MINUTE,
                                                       str(num_days) + "day ago UTC")
         return data
+
 
 
 class CoinbaseWebsocketClient(cbpro.WebsocketClient):
@@ -270,9 +282,21 @@ class Coinbase(Exchange):
         print("Coinbase socket connected...")
 
     def get_bid(self):
+        """
+        Method to get best bid on the Coinbase market.
+
+        Returns:
+            bid (float): Best bid on the Coinbase market
+        """
         return float(self.client.best_bid)
 
     def get_ask(self):
+        """
+        Method to get best bid on the Coinbase market.
+
+        Returns:
+            bid (float): Best bid on the Coinbase market
+        """
         return float(self.client.best_ask)
 
     def restart_socket(self):
@@ -283,3 +307,6 @@ class Coinbase(Exchange):
         self.client.start()
         print("Coinbase socket restarted")
         self.client.stream_error = False
+
+    def get_stream_error(self):
+        return self.client.stream_error
