@@ -25,12 +25,12 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), HitBtc(), Gemini()]
+exchange_list = [Binance(), HitBtc(), Coinbase(), Gemini()]
 
-investors = [Investor("Maxwell", {"disc_count": 2, "disc_size": 70}, {"disc_count": 2, "disc_size": -5}),
-             Investor("Leonard", {"disc_count": 2, "disc_size": 55}, {"disc_count": 2, "disc_size": -5}),
-             Investor("Amanda", {"disc_count": 2, "disc_size": 75}, {"disc_count": 2, "disc_size": 0}),
-             Investor("Ezra", {"disc_count": 2, "disc_size": 60}, {"disc_count": 2, "disc_size": -10})]
+investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 70}, {"disc_count": 2, "disc_size": -5}),
+             Investor("Leonard", {"disc_count": 3, "disc_size": 55}, {"disc_count": 2, "disc_size": -5}),
+             Investor("Amanda", {"disc_count": 3, "disc_size": 70}, {"disc_count": 3, "disc_size": 10}),
+             Investor("Ezra", {"disc_count": 3, "disc_size": 60}, {"disc_count": 2, "disc_size": -10})]
 
 
 def get_historical_bids(test_length):
@@ -68,11 +68,12 @@ def get_historical_bids(test_length):
         if exchange_list[1].stream_error:
             exchange_list[1].restart_stream()
             continue
-        #if exchange_list[2].client.stream_error:
-        #    exchange_list[2].restart_stream()
-        #    continue
-        for investor in investors:
-            investor.invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
+        if exchange_list[2].client.stream_error:
+            exchange_list[2].restart_stream()
+            continue
+        if x > 20000:
+            for investor in investors:
+                investor.invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
 
 
 print("Waiting for websockets to connect...")
