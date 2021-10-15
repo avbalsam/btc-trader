@@ -2,7 +2,7 @@ import time
 
 
 class Investor:
-    def __init__(self, name, buy_criteria, sell_criteria):
+    def __init__(self, name, buy_criteria, sell_criteria, live_trading=False):
         """
         Args:
             name (str): Name of investor
@@ -14,6 +14,7 @@ class Investor:
                 disc_size (float): Size of discrepancy needed to be considered a discrepancy.
         """
         self.name = name
+        self.live_trading = live_trading
         self.holdings = {'usdt': 1000, 'btc': 0}
         self.holding_crypto = False
         self.buy_criteria = buy_criteria
