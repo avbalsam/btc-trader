@@ -36,6 +36,7 @@ class Gemini(Exchange):
         self.socket_data = list()
         self.best_bid = float()
         self.best_ask = float()
+        self.stream_error = False
         time.sleep(5)
         self.worker_thread = threading.Thread(target=self.thread_receive_socket_data)
         self.worker_thread.start()
