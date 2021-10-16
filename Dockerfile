@@ -8,12 +8,8 @@ ADD Investor.py .
 
 ADD requirements.txt .
 
-RUN pip install -r requirements.txt
-
-RUN pip uninstall websocket
-
-RUN pip uninstall websocket-client
-
 RUN pip install websocket-client
+
+RUN pip install -r requirements.txt
 
 CMD ["python", "./Main.py"]
