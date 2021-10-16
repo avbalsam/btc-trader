@@ -2,11 +2,11 @@ import queue
 import threading
 import time
 
-import cbpro
 from binance import ThreadedWebsocketManager
 from binance import Client
-from gemini import GeminiOrderBook
 from hitbtc import HitBTC
+from gemini import GeminiOrderBook
+import cbpro
 
 
 # Class which handles exchanges
