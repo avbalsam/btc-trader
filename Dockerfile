@@ -10,8 +10,8 @@ ADD requirements.txt .
 
 RUN pip install -r requirements.txt
 
-RUN pip install websocket
+RUN pip3 install websocket
 
-RUN pip install websocket-client
+RUN pip3 install websocket-client
 
 CMD ["python", "./Main.py"]
