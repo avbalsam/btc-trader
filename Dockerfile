@@ -8,8 +8,6 @@ ADD Investor.py .
 
 ADD requirements.txt .
 
-RUN pip install websocket-client
-
 RUN pip install -r requirements.txt
 
 CMD ["python", "./Main.py"]
