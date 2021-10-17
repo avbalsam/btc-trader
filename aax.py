@@ -13,9 +13,9 @@ from cryptoxlib.version_conversions import async_run
 
 class AAX:
     def __init__(self):
-        #LOG = logging.getLogger("cryptoxlib")
-        #LOG.setLevel(logging.DEBUG)
-        #LOG.addHandler(logging.StreamHandler())
+        LOG = logging.getLogger("cryptoxlib")
+        LOG.setLevel(logging.INFO)
+        LOG.addHandler(logging.StreamHandler())
 
         self.name = "AAX"
         self.api_key = "a0dwBYAi3LcTRT0uPwV8VPsAz9"

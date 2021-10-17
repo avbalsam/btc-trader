@@ -9,13 +9,13 @@ from cryptoxlib.clients.bitforex.BitforexWebsocket import OrderBookSubscription,
     Ticker24hSubscription
 from cryptoxlib.version_conversions import async_run
 
-#LOG = logging.getLogger("cryptoxlib")
-#LOG.setLevel(logging.DEBUG)
-#LOG.addHandler(logging.StreamHandler())
-
 
 class Bitforex:
     def __init__(self):
+        LOG = logging.getLogger("cryptoxlib")
+        LOG.setLevel(logging.INFO)
+        LOG.addHandler(logging.StreamHandler())
+
         api_key = "5c93be0edb56bde9adde22997b87ceb6"
         sec_key = "cd0918f37fa80a73254d7189929d5d09"
 
