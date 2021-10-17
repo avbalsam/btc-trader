@@ -19,7 +19,6 @@ class Binance:
         self.name = "Binance"
         self.best_bid = float()
         self.best_ask = float()
-        self.stream_error = False
 
         self.api_key = "mf47OdnGELNlVentiyRGQOmKvl7HjpXn7zLPwA5xnOWSM5Dv3kCAwk4II81oQfLP"
         self.sec_key = "ABiqm9CQRV2tF9dQOaplFv8esOfqYFHyVDVjDVLK3AYvMk1qpNoSYy0mN8tMwR3f"
