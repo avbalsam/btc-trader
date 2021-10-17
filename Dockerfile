@@ -2,7 +2,15 @@ FROM python:3.9.7
 
 ADD Main.py .
 
-ADD Exchange.py .
+ADD aax.py .
+
+ADD bitforex.py .
+
+ADD binance.py .
+
+ADD bitforex.py .
+
+ADD hitbtc.py .
 
 ADD Investor.py .
 
