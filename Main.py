@@ -7,6 +7,8 @@ from cryptoxlib.version_conversions import async_run
 from binance import Binance
 from bitforex import Bitforex
 from aax import AAX
+from hitbtc import Hitbtc
+
 from Investor import Investor
 
 
@@ -29,7 +31,7 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), Bitforex(), AAX()]
+exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 
 
 async def run(invest_length):
