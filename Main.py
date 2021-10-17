@@ -86,7 +86,7 @@ async def get_historical_bids(test_length):
             else:
                 avg_diff[e] = np.mean(diff_lists[e][-75000:])
             mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
-        if x > 20000:
+        if x > 30000:
             for investor in investors:
                 investor.invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
 
