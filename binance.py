@@ -51,5 +51,3 @@ class Binance:
         await self.client.start_websockets()
 
         await self.client.close()
-
-
