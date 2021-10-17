@@ -71,7 +71,6 @@ async def get_historical_bids(test_length):
         if x % 100 == 0:
             print("Current time: " + time.ctime())
             print(str(x) + " loops completed. Writing collected data to csv...")
-            print(bids)
             print(avg_diff)
             for investor in investors:
                 print(investor.name + " transaction history: " + str(investor.transaction_history))
