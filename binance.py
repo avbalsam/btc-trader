@@ -12,9 +12,10 @@ from cryptoxlib.version_conversions import async_run
 
 class Binance:
     def __init__(self):
-        LOG = logging.getLogger("cryptoxlib")
-        LOG.setLevel(logging.DEBUG)
-        LOG.addHandler(logging.StreamHandler())
+        #LOG = logging.getLogger("cryptoxlib")
+        #LOG.setLevel(logging.DEBUG)
+        #LOG.addHandler(logging.StreamHandler())
+
         self.name = "Binance"
         self.best_bid = float()
         self.best_ask = float()
@@ -25,8 +26,13 @@ class Binance:
 
         self.client = CryptoXLib.create_binance_testnet_client(self.api_key, self.sec_key)
 
-        if __name__ == "__main__":
-            async_run(self.run())
+        self.client.compose_subscriptions([
+            OrderBookSymbolTickerSubscription(pair=Pair("BTC", "USDT"), callbacks=[self.orderbook_ticker_update])
+        ])
+
+        self.client.compose_subscriptions([
+            AccountSubscription(callbacks=[self.account_update])
+        ])
 
     def get_bid(self):
         return self.best_bid
@@ -38,22 +44,6 @@ class Binance:
         print(f"Callback account_update: [{response}]")
 
     async def orderbook_ticker_update(self, response: dict) -> None:
-        print(f"Callback orderbook_ticker_update: [{response}]")
+        #print(f"Callback orderbook_ticker_update: [{response}]")
         self.best_ask = response['data']['a']
         self.best_bid = response['data']['b']
-
-    async def run(self):
-        # Bundle several subscriptions into a single websocket
-        self.client.compose_subscriptions([
-            OrderBookSymbolTickerSubscription(pair=Pair("BTC", "USDT"), callbacks=[self.orderbook_ticker_update])
-        ])
-
-        # Bundle another subscriptions into a separate websocket
-        self.client.compose_subscriptions([
-            AccountSubscription(callbacks=[self.account_update])
-        ])
-
-        # Execute all websockets asynchronously
-        await self.client.start_websockets()
-
-        await self.client.close()
