@@ -17,7 +17,7 @@ class AAX:
         #LOG.setLevel(logging.DEBUG)
         #LOG.addHandler(logging.StreamHandler())
 
-        self.client = None
+        self.name = "AAX"
         self.api_key = "a0dwBYAi3LcTRT0uPwV8VPsAz9"
         self.sec_key = "5d03a6614652887bb5835261be46a34d"
         user_id = "avbalsam@gmail.com"
@@ -40,28 +40,3 @@ class AAX:
         # print(f"Callback order_book_update: [{response}]")
         self.best_bid = response['bids'][0][0]
         self.best_ask = response['asks'][0][0]
-
-
-async def main_loop(e):
-    while True:
-        print([i.get_bid() for i in e])
-        await asyncio.sleep(1)
-
-a = AAX()
-b = Binance()
-c = Bitforex()
-
-async def run():
-    while True:
-        try:
-            await asyncio.gather(*[a.client.start_websockets(), b.client.start_websockets(), c.client.start_websockets(), main_loop([a, b, c])])
-            break
-        except Exception as e:
-            print(f"Out: {e}")
-            continue
-    try:
-        await asyncio.gather(*[a.client.close(), b.client.close(), c.client.close()])
-    except Exception as e:
-        print(f"Out: {e}")
-if __name__ == "__main__":
-    async_run(run())

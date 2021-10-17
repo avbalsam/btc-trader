@@ -22,6 +22,7 @@ class Bitforex:
         self.client = CryptoXLib.create_bitforex_client(api_key, sec_key)
         self.best_bid = float()
         self.best_ask = float()
+        self.name = "Bitforex"
 
         # Bundle several subscriptions into a single websocket
         self.client.compose_subscriptions([
