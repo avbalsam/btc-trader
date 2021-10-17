@@ -1,20 +1,20 @@
-FROM python:3
+FROM python:3.7
 
-ADD Main.py .
+COPY Main.py .
 
-ADD aax.py .
+COPY aax.py .
 
-ADD bitforex.py .
+COPY bitforex.py .
 
-ADD binance.py .
+COPY binance.py .
 
-ADD bitforex.py .
+COPY bitforex.py .
 
-ADD hitbtc.py .
+COPY hitbtc.py .
 
-ADD Investor.py .
+COPY Investor.py .
 
-ADD requirements.txt .
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
