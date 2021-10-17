@@ -1,5 +1,2 @@
-gemini_python==0.2.1
-cbpro==1.1.4
-cryptoxlib_aio==5.2.1
 numpy==1.21.2
-gemini==0.30.2
+cryptoxlib_aio==5.2.1
