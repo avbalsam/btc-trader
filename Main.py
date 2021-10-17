@@ -67,7 +67,6 @@ async def get_historical_bids(test_length):
         if 0.0 in bids:
             print(bids)
             continue
-        print(bids)
         if x % 100 == 0:
             print("Current time: " + time.ctime())
             print(str(x) + " loops completed. Writing collected data to csv...")
