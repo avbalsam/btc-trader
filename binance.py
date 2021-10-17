@@ -35,10 +35,10 @@ class Binance:
         ])
 
     def get_bid(self):
-        return self.best_bid
+        return float(self.best_bid)
 
     def get_ask(self):
-        return self.get_ask()
+        return float(self.get_ask())
 
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")

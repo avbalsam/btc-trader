@@ -34,7 +34,7 @@ class Bitforex:
         self.best_ask = response['data']['asks'][0]['price']
 
     def get_bid(self):
-        return self.best_bid
+        return float(self.best_bid)
 
     def get_ask(self):
-        return self.best_ask
+        return float(self.best_ask)

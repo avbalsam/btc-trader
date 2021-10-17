@@ -31,10 +31,10 @@ class AAX:
         self.best_ask = float()
 
     def get_bid(self):
-        return self.best_bid
+        return float(self.best_bid)
 
     def get_ask(self):
-        return self.best_ask
+        return float(self.best_ask)
 
     async def order_book_update(self, response: dict) -> None:
         # print(f"Callback order_book_update: [{response}]")
