@@ -28,6 +28,12 @@ class Binance:
         if __name__ == "__main__":
             async_run(self.run())
 
+    def get_bid(self):
+        return self.best_bid
+
+    def get_ask(self):
+        return self.get_ask()
+
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")
 
