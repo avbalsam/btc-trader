@@ -65,7 +65,6 @@ async def get_historical_bids(test_length):
         await asyncio.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
         if 0.0 in bids:
-            print(bids)
             continue
         if x % 100 == 0:
             print("Current time: " + time.ctime())
