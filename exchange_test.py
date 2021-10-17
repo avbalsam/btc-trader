@@ -10,15 +10,6 @@ from cryptoxlib.Pair import Pair
 from cryptoxlib.version_conversions import async_run
 
 
-async def account_update(response: dict) -> None:
-    print(f"Callback account_update: [{response}]")
-
-
-async def orderbook_ticker_update(response: dict) -> None:
-    print(f"Callback orderbook_ticker_update: [{response}]")
-    print(response['data']['b'])
-
-
 class Binance:
     def __init__(self):
         LOG = logging.getLogger("cryptoxlib")
@@ -37,18 +28,28 @@ class Binance:
         if __name__ == "__main__":
             async_run(self.run())
 
+    async def account_update(self, response: dict) -> None:
+        print(f"Callback account_update: [{response}]")
+
+    async def orderbook_ticker_update(self, response: dict) -> None:
+        print(f"Callback orderbook_ticker_update: [{response}]")
+        self.best_ask = response['data']['a']
+        self.best_bid = response['data']['b']
+
     async def run(self):
         # Bundle several subscriptions into a single websocket
         self.client.compose_subscriptions([
-            OrderBookSymbolTickerSubscription(pair=Pair("BTC", "USDT"), callbacks=[orderbook_ticker_update])
+            OrderBookSymbolTickerSubscription(pair=Pair("BTC", "USDT"), callbacks=[self.orderbook_ticker_update])
         ])
 
         # Bundle another subscriptions into a separate websocket
         self.client.compose_subscriptions([
-            AccountSubscription(callbacks=[account_update])
+            AccountSubscription(callbacks=[self.account_update])
         ])
 
         # Execute all websockets asynchronously
         await self.client.start_websockets()
 
         await self.client.close()
+
+
