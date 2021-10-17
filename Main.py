@@ -1,8 +1,12 @@
+import asyncio
 import csv
 import time
 import numpy as np
+from cryptoxlib.version_conversions import async_run
 
-from Exchange import Binance, HitBtc, Coinbase, Gemini
+from binance import Binance
+from bitforex import Bitforex
+from aax import AAX
 from Investor import Investor
 
 
@@ -25,7 +29,23 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), HitBtc(), Coinbase(), Gemini()]
+exchange_list = [Binance(), Bitforex(), AAX()]
+
+
+async def run(invest_length):
+    while True:
+        try:
+            await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
+                                 get_historical_bids(invest_length))
+            break
+        except Exception as e:
+            print(f"Out: {e}")
+            continue
+    try:
+        await asyncio.gather(*[e.client.close() for e in exchange_list])
+    except Exception as e:
+        print(f"Out: {e}")
+
 
 investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 70}, {"disc_count": 2, "disc_size": -5}),
              Investor("Leonard", {"disc_count": 3, "disc_size": 55}, {"disc_count": 2, "disc_size": -5}),
@@ -33,15 +53,18 @@ investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 70}, {"disc_coun
              Investor("Ezra", {"disc_count": 3, "disc_size": 60}, {"disc_count": 2, "disc_size": -10})]
 
 
-def get_historical_bids(test_length):
+async def get_historical_bids(test_length):
     fields = [exchange.name for exchange in exchange_list]
     historical_bids = [list() for i in range(0, len(exchange_list))]
     diff_lists = [list() for i in range(0, len(exchange_list))]
     avg_diff = [e.get_bid() - exchange_list[0].get_bid() for e in exchange_list]
     mean_diff = [list() for i in range(0, len(exchange_list))]
     for x in range(1, test_length):
-        time.sleep(.05)
+        await asyncio.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
+        if 0.0 in bids:
+            print(bids)
+            continue
         if x % 1000 == 0:
             print("Current time: " + time.ctime())
             print(str(x) + " loops completed. Writing collected data to csv...")
@@ -61,26 +84,9 @@ def get_historical_bids(test_length):
             else:
                 avg_diff[e] = np.mean(diff_lists[e][-75000:])
             mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
-        # TODO Create restart stream method for every exchange and check each one with for loop
-        if exchange_list[0].stream_error:
-            exchange_list[0].restart_socket()
-            continue
-        if exchange_list[1].stream_error:
-            exchange_list[1].restart_socket()
-            continue
-        if exchange_list[2].client.stream_error:
-            exchange_list[2].restart_socket()
-            continue
         if x > 20000:
             for investor in investors:
                 investor.invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
 
-
-print("Waiting for websockets to connect...")
-while 0.0 in [e.get_bid() for e in exchange_list]:
-    print([e.get_bid() for e in exchange_list])
-    time.sleep(.1)
-
-print("Websockets connected. Starting investment period...")
-
-get_historical_bids(500000)
+if __name__ == "__main__":
+    async_run(run(500000))
