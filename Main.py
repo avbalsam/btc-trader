@@ -35,9 +35,9 @@ def write_to_csv(filename, fields, data):
 # initialize all exchanges using their constructors
 exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 
-# LOG = logging.getLogger("cryptoxlib")
-# LOG.setLevel(logging.INFO)
-# LOG.addHandler(logging.StreamHandler())
+LOG = logging.getLogger("cryptoxlib")
+LOG.setLevel(logging.INFO)
+LOG.addHandler(logging.StreamHandler())
 
 
 async def run(invest_length):
