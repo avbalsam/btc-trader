@@ -29,6 +29,12 @@ class Hitbtc():
             OrderbookSubscription(pair=Pair("BTC", "USD"), callbacks=[self.order_book_update])
         ])
 
+    def get_bid(self):
+        return float(self.best_bid)
+
+    def get_ask(self):
+        return float(self.best_ask)
+
     async def order_book_update(self, response: dict) -> None:
         # print(f"Callback order_book_update: [{response}]")
         try:
@@ -38,9 +44,3 @@ class Hitbtc():
             print(f"Callback order_book_update: [{response}]")
         except IndexError:
             pass
-
-    def get_bid(self):
-        return float(self.best_bid)
-
-    def get_ask(self):
-        return float(self.best_ask)

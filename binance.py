@@ -43,6 +43,11 @@ class Binance:
         print(f"Callback account_update: [{response}]")
 
     async def orderbook_ticker_update(self, response: dict) -> None:
-        #print(f"Callback orderbook_ticker_update: [{response}]")
-        self.best_ask = response['data']['a']
-        self.best_bid = response['data']['b']
+        # print(f"Callback orderbook_ticker_update: [{response}]")
+        try:
+            self.best_ask = response['data']['a']
+            self.best_bid = response['data']['b']
+        except KeyError:
+            print(f"Out: [{response}]")
+        except IndexError:
+            pass

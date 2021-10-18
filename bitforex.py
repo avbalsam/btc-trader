@@ -29,13 +29,18 @@ class Bitforex:
             OrderBookSubscription(pair=Pair('BTC', 'USDT'), depth="0", callbacks=[self.order_book_update])
         ])
 
-    async def order_book_update(self, response: dict) -> None:
-        # print(f"Callback order_book_update: [{response}]")
-        self.best_bid = response['data']['bids'][0]['price']
-        self.best_ask = response['data']['asks'][0]['price']
-
     def get_bid(self):
         return float(self.best_bid)
 
     def get_ask(self):
         return float(self.best_ask)
+
+    async def order_book_update(self, response: dict) -> None:
+        # print(f"Callback order_book_update: [{response}]")
+        try:
+            self.best_bid = response['data']['bids'][0]['price']
+            self.best_ask = response['data']['asks'][0]['price']
+        except KeyError:
+            print(f"Out: [{response}]")
+        except IndexError:
+            pass

@@ -38,5 +38,10 @@ class AAX:
 
     async def order_book_update(self, response: dict) -> None:
         # print(f"Callback order_book_update: [{response}]")
-        self.best_bid = response['bids'][0][0]
-        self.best_ask = response['asks'][0][0]
+        try:
+            self.best_bid = response['bids'][0][0]
+            self.best_ask = response['asks'][0][0]
+        except KeyError:
+            print(f"Out: [{response}]")
+        except IndexError:
+            pass
