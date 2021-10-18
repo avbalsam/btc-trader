@@ -35,14 +35,11 @@ exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 
 
 async def run(invest_length):
-    while True:
-        try:
-            await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
-                                 get_historical_bids(invest_length))
-            break
-        except Exception as e:
-            print(f"Out: {e}")
-            continue
+    try:
+        await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
+                             get_historical_bids(invest_length))
+    except Exception as e:
+        print(f"Out: {e}")
     try:
         await asyncio.gather(*[e.client.close() for e in exchange_list])
     except Exception as e:
@@ -65,7 +62,9 @@ async def get_historical_bids(test_length):
         await asyncio.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
         if 0.0 in bids:
+            print(bids)
             continue
+        print(bids)
         if x % 100 == 0:
             print("Current time: " + time.ctime())
             print(str(x) + " loops completed. Writing collected data to csv...")
