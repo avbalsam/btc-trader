@@ -35,9 +35,9 @@ def write_to_csv(filename, fields, data):
 # initialize all exchanges using their constructors
 exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 
-LOG = logging.getLogger("cryptoxlib")
-LOG.setLevel(logging.INFO)
-LOG.addHandler(logging.StreamHandler())
+# LOG = logging.getLogger("cryptoxlib")
+# LOG.setLevel(logging.INFO)
+# LOG.addHandler(logging.StreamHandler())
 
 
 async def run(invest_length):
@@ -67,7 +67,7 @@ async def get_historical_bids(test_length):
     avg_diff = [e.get_bid() - exchange_list[0].get_bid() for e in exchange_list]
     mean_diff = [list() for i in range(0, len(exchange_list))]
     for x in range(1, test_length):
-        await asyncio.sleep(.5)
+        await asyncio.sleep(.1)
         bids = [e.get_bid() for e in exchange_list]
         if 0.0 in bids:
             x -= 1
@@ -81,10 +81,10 @@ async def get_historical_bids(test_length):
             print(avg_diff)
             for investor in investors:
                 print(investor.name + " transaction history: " + str(investor.transaction_history))
-            write_to_csv("bid_data", fields, historical_bids)
-            write_to_csv("diffs_data", fields, diff_lists)
-            write_to_csv("mean_diffs_data", fields, mean_diff)
-            write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
+            # write_to_csv("bid_data", fields, historical_bids)
+            # write_to_csv("diffs_data", fields, diff_lists)
+            # write_to_csv("mean_diffs_data", fields, mean_diff)
+            # write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
         for e in range(0, len(exchange_list)):
             historical_bids[e].append(exchange_list[e].get_bid())
             diff_lists[e].append(exchange_list[e].get_bid() - exchange_list[0].get_bid())
