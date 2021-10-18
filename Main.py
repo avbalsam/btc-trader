@@ -24,7 +24,7 @@ def write_to_csv(filename, fields, data):
         data (list): Nested list. Each element represents one row.
     """
     try:
-        with open("data/" + filename + ".csv", "w") as f:
+        with open(f"{filename}.csv", "w") as f:
             write = csv.writer(f)
             write.writerow(fields)
             write.writerows(data)
@@ -41,13 +41,17 @@ LOG.addHandler(logging.StreamHandler())
 
 
 async def run(invest_length):
+    try:
+        await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
+                             get_historical_bids(invest_length))
+    except Exception as e:
+        print(f"Error while starting websockets: {e}")
     while True:
         try:
-            await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
-                                 get_historical_bids(invest_length))
+            await asyncio.gather(*[e.client.start_websockets() for e in exchange_list])
             break
         except Exception as e:
-            print(f"Error while starting websockets: {e}")
+            print(f"Error while restarting websockets {e}")
     try:
         await asyncio.gather(*[e.client.close() for e in exchange_list])
     except Exception as e:
@@ -82,10 +86,10 @@ async def get_historical_bids(test_length):
             print(avg_diff)
             for investor in investors:
                 print(investor.name + " transaction history: " + str(investor.transaction_history))
-            # write_to_csv("bid_data", fields, historical_bids)
-            # write_to_csv("diffs_data", fields, diff_lists)
-            # write_to_csv("mean_diffs_data", fields, mean_diff)
-            # write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
+            write_to_csv("bid_data", fields, historical_bids)
+            write_to_csv("diffs_data", fields, diff_lists)
+            write_to_csv("mean_diffs_data", fields, mean_diff)
+            write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
         for e in range(0, len(exchange_list)):
             historical_bids[e].append(exchange_list[e].get_bid())
             diff_lists[e].append(exchange_list[e].get_bid() - exchange_list[0].get_bid())
