@@ -79,7 +79,7 @@ async def get_historical_bids(test_length):
             await asyncio.sleep(1)
             continue
         # print(time.ctime() + str(bids) + " btc")
-        if x % 100 == 0:
+        if x % 1000 == 0:
             print("Current time: " + time.ctime())
             print(f"{str(x)} loops completed...")
             print(bids)
