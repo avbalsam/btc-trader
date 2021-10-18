@@ -36,7 +36,7 @@ def write_to_csv(filename, fields, data):
 exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 
 LOG = logging.getLogger("cryptoxlib")
-LOG.setLevel(logging.DEBUG)
+LOG.setLevel(logging.INFO)
 LOG.addHandler(logging.StreamHandler())
 
 
@@ -71,9 +71,10 @@ async def get_historical_bids(test_length):
         bids = [e.get_bid() for e in exchange_list]
         if 0.0 in bids:
             x -= 1
-            print(bids)
+            print(time.ctime() + str(bids))
+            await asyncio.sleep(1)
             continue
-        print(bids)
+        print(time.ctime() + str(bids) + " btc")
         if x % 100 == 0:
             print("Current time: " + time.ctime())
             print(str(x) + " loops completed. Writing collected data to csv...")
