@@ -12,10 +12,6 @@ from cryptoxlib.version_conversions import async_run
 
 class Bitforex:
     def __init__(self):
-        LOG = logging.getLogger("cryptoxlib")
-        LOG.setLevel(logging.INFO)
-        LOG.addHandler(logging.StreamHandler())
-
         api_key = "5c93be0edb56bde9adde22997b87ceb6"
         sec_key = "cd0918f37fa80a73254d7189929d5d09"
 

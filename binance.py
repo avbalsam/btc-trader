@@ -12,10 +12,6 @@ from cryptoxlib.version_conversions import async_run
 
 class Binance:
     def __init__(self):
-        LOG = logging.getLogger("cryptoxlib")
-        LOG.setLevel(logging.INFO)
-        LOG.addHandler(logging.StreamHandler())
-
         self.name = "Binance"
         self.best_bid = float()
         self.best_ask = float()

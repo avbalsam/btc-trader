@@ -9,10 +9,6 @@ from cryptoxlib.clients.hitbtc.HitbtcWebsocket import TickerSubscription, Orderb
 from cryptoxlib.clients.hitbtc import enums
 from cryptoxlib.version_conversions import async_run
 
-#LOG = logging.getLogger("cryptoxlib")
-#LOG.setLevel(logging.DEBUG)
-#LOG.addHandler(logging.StreamHandler())
-
 
 class Hitbtc():
     def __init__(self):

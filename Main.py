@@ -2,6 +2,8 @@ import asyncio
 import csv
 import time
 import numpy as np
+import logging
+
 from cryptoxlib.version_conversions import async_run
 
 from binance import Binance
@@ -33,6 +35,10 @@ def write_to_csv(filename, fields, data):
 # initialize all exchanges using their constructors
 exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 
+LOG = logging.getLogger("cryptoxlib")
+LOG.setLevel(logging.DEBUG)
+LOG.addHandler(logging.StreamHandler())
+
 
 async def run(invest_length):
     while True:
@@ -61,11 +67,13 @@ async def get_historical_bids(test_length):
     avg_diff = [e.get_bid() - exchange_list[0].get_bid() for e in exchange_list]
     mean_diff = [list() for i in range(0, len(exchange_list))]
     for x in range(1, test_length):
-        await asyncio.sleep(.05)
+        await asyncio.sleep(.5)
         bids = [e.get_bid() for e in exchange_list]
         if 0.0 in bids:
             x -= 1
+            print(bids)
             continue
+        print(bids)
         if x % 100 == 0:
             print("Current time: " + time.ctime())
             print(str(x) + " loops completed. Writing collected data to csv...")
