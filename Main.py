@@ -47,7 +47,7 @@ async def run(invest_length):
                                  get_historical_bids(invest_length))
             break
         except Exception as e:
-            print(f"Out: {e}")
+            print(f"Error while starting websockets: {e}")
     try:
         await asyncio.gather(*[e.client.close() for e in exchange_list])
     except Exception as e:
