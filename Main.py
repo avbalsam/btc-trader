@@ -71,13 +71,14 @@ async def get_historical_bids(test_length):
         bids = [e.get_bid() for e in exchange_list]
         if 0.0 in bids:
             x -= 1
-            print(time.ctime() + str(bids))
+            #print(time.ctime() + str(bids))
             await asyncio.sleep(1)
             continue
-        print(time.ctime() + str(bids) + " btc")
+        #print(time.ctime() + str(bids) + " btc")
         if x % 100 == 0:
             print("Current time: " + time.ctime())
-            print(str(x) + " loops completed. Writing collected data to csv...")
+            print(f"{str(x)} loops completed...")
+            print(bids)
             print(avg_diff)
             for investor in investors:
                 print(investor.name + " transaction history: " + str(investor.transaction_history))
