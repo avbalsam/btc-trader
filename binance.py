@@ -47,3 +47,5 @@ class Binance:
             print(f"Out: [{response}]")
         except IndexError:
             pass
+        except Exception:
+            print("Uncaught exception in Binance")

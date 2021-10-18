@@ -41,3 +41,5 @@ class AAX:
             print(f"Out: [{response}]")
         except IndexError:
             pass
+        except Exception:
+            print("Uncaught exception in AAX")

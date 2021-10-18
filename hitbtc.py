@@ -40,3 +40,5 @@ class Hitbtc():
             print(f"Callback order_book_update: [{response}]")
         except IndexError:
             pass
+        except Exception:
+            print("Uncaught exception in Hitbtc")
