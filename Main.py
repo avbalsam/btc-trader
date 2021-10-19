@@ -86,10 +86,10 @@ async def get_historical_bids(test_length):
             print(avg_diff)
             for investor in investors:
                 print(investor.name + " transaction history: " + str(investor.transaction_history))
-            write_to_csv("bid_data", fields, historical_bids)
-            write_to_csv("diffs_data", fields, diff_lists)
-            write_to_csv("mean_diffs_data", fields, mean_diff)
-            write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
+            # write_to_csv("bid_data", fields, historical_bids)
+            # write_to_csv("diffs_data", fields, diff_lists)
+            # write_to_csv("mean_diffs_data", fields, mean_diff)
+            # write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
         buy_disc_count = 0
         sell_disc_count = 0
         for e in range(0, len(exchange_list)):
@@ -109,6 +109,7 @@ async def get_historical_bids(test_length):
             if buy_disc_count == len(exchange_list)-1 and investors[0].holding_crypto is False:
                 # TODO figure out why the below code can't be replaced by the above comment
                 #investors[0].usdt_to_btc(exchange_list[0].get_ask())
+                await exchange_list[0].buy_market()
                 investors[0].holding_crypto = True
                 usdt = investors[0].holdings['usdt']
                 btc_value = (usdt - usdt * investors[0].commission) / float(exchange_list[0].best_ask)
@@ -119,6 +120,7 @@ async def get_historical_bids(test_length):
                 investors[0].transaction_history.append(
                     {'time': time.ctime(), 'transaction': 'usdt_to_btc', 'usdt': usdt, 'btc': btc_value})
             if sell_disc_count == len(exchange_list)-2 and investors[0].holding_crypto is True:
+                await exchange_list[0].sell_market()
                 investors[0].btc_to_usdt(exchange_list[0].get_bid())
 
         # TODO figure out source of recursion error on this function call and replace previous code with it

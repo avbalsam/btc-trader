@@ -3,6 +3,7 @@ import os
 from datetime import datetime
 
 from cryptoxlib.CryptoXLib import CryptoXLib
+from cryptoxlib.clients.binance import enums
 from cryptoxlib.clients.binance.BinanceWebsocket import AccountSubscription, OrderBookTickerSubscription, \
     TradeSubscription, OrderBookSymbolTickerSubscription, CandlestickSubscription
 from cryptoxlib.clients.binance.enums import Interval
@@ -38,6 +39,16 @@ class Binance:
 
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")
+
+    async def buy_market(self):
+        await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.MARKET,
+                                       quantity="1",
+                                       new_order_response_type=enums.OrderResponseType.FULL)
+
+    async def sell_market(self):
+        await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.MARKET,
+                                       quantity="1",
+                                       new_order_response_type=enums.OrderResponseType.FULL)
 
     async def orderbook_ticker_update(self, response: dict) -> None:
         # print(f"Callback orderbook_ticker_update: [{response}]")
