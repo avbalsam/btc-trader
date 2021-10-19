@@ -2,7 +2,7 @@ import time
 
 
 class Investor:
-    def __init__(self, name, buy_criteria, sell_criteria, live_trading=False):
+    def __init__(self, name, buy_criteria, sell_criteria, live_trading=False, commission=.00075):
         """
         Args:
             name (str): Name of investor
@@ -12,6 +12,8 @@ class Investor:
             sell_criteria (dict): {disc_count: int(), disc_size: int()}
                 disc_count (int): Number of discrepancies needed for exchange to sell.
                 disc_size (float): Size of discrepancy needed to be considered a discrepancy.
+            live_trading (bool): Whether or not the investor will trade with real money
+            commission (float): Amount of commission per transaction in decimal form (not percentage)
         """
         self.name = name
         self.live_trading = live_trading
@@ -21,8 +23,9 @@ class Investor:
         self.sell_criteria = sell_criteria
         self.crypto_holdings = 0
         self.transaction_history = list()
+        self.commission = commission
 
-    def invest(self, mean_diff, ask_price, bid_price, commission=.00075):
+    def invest(self, mean_diff, ask_price, bid_price):
         """
         Check investor strategy and current price discrepancies, and decide whether investor will buy, sell, or hold.
 
@@ -38,7 +41,7 @@ class Investor:
                 if m[-1] > self.buy_criteria['disc_size']:
                     disc_count += 1
             if disc_count >= self.buy_criteria['disc_count']:
-                self.usdt_to_btc(ask_price, commission)
+                self.usdt_to_btc(ask_price, self.commission)
                 self.holding_crypto = True
         else:
             disc_count = 0
@@ -46,7 +49,7 @@ class Investor:
                 if m[-1] < self.sell_criteria['disc_size']:
                     disc_count += 1
             if disc_count >= self.sell_criteria['disc_count']:
-                self.btc_to_usdt(bid_price, commission)
+                self.btc_to_usdt(bid_price, self.commission)
                 self.holding_crypto = False
 
     def usdt_to_btc(self, ask_price, commission=.00075):
@@ -57,6 +60,7 @@ class Investor:
             ask_price (float): Current ask price of bitcoin. Make sure to pass ask price, not spot or bid.
             commission (float): Commission fees at current trade volume. Do not pass a percentage to this function.
         """
+        self.holding_crypto = True
         usdt = self.holdings['usdt']
         btc_value = (usdt - usdt * commission) / ask_price
         self.holdings['usdt'] -= usdt
@@ -73,6 +77,7 @@ class Investor:
             bid_price (float): Current bid price of bitcoin. Make sure to pass bid price, not spot or ask.
             commission (float): Commission fees at current trade volume. Do not pass a percentage to this function.
         """
+        self.holding_crypto = False
         btc = self.holdings['btc']
         usdt_value = (btc - btc * commission) * bid_price
         self.holdings['btc'] -= btc
