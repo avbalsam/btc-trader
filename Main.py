@@ -100,7 +100,7 @@ async def get_historical_bids(test_length):
             else:
                 avg_diff[e] = np.mean(diff_lists[e][-75000:])
             mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
-            if mean_diff[e][-1] > 5:
+            if mean_diff[e][-1] > 65:
                 buy_disc_count += 1
             if mean_diff[e][-1] < 0:
                 sell_disc_count += 1
