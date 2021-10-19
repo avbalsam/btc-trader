@@ -70,6 +70,7 @@ async def get_historical_bids(test_length):
     diff_lists = [list() for i in range(0, len(exchange_list))]
     avg_diff = [e.get_bid() - exchange_list[0].get_bid() for e in exchange_list]
     mean_diff = [list() for i in range(0, len(exchange_list))]
+    await exchange_list[0].update_account_balances()
     for x in range(1, test_length):
         await asyncio.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
@@ -84,8 +85,7 @@ async def get_historical_bids(test_length):
             print(f"{str(x)} loops completed...")
             print(bids)
             print(avg_diff)
-            for investor in investors:
-                print(investor.name + " transaction history: " + str(investor.transaction_history))
+            print(f"Current holdings: {str(exchange_list[0].holdings)}")
             # write_to_csv("bid_data", fields, historical_bids)
             # write_to_csv("diffs_data", fields, diff_lists)
             # write_to_csv("mean_diffs_data", fields, mean_diff)
