@@ -69,7 +69,7 @@ async def get_historical_bids(test_length):
     historical_bids = [list() for i in range(0, len(exchange_list))]
     diff_lists = [list() for i in range(0, len(exchange_list))]
     avg_diff = [e.get_bid() - exchange_list[0].get_bid() for e in exchange_list]
-    mean_diff = [list() for i in range(0, len(exchange_list))]
+    exchange_list[0].mean_diff = [list() for i in range(0, len(exchange_list))]
     for x in range(1, test_length):
         await asyncio.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
@@ -88,7 +88,7 @@ async def get_historical_bids(test_length):
                 print(investor.name + " transaction history: " + str(investor.transaction_history))
             write_to_csv("bid_data", fields, historical_bids)
             write_to_csv("diffs_data", fields, diff_lists)
-            write_to_csv("mean_diffs_data", fields, mean_diff)
+            write_to_csv("mean_diffs_data", fields, exchange_list[0].mean_diff)
             write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
         for e in range(0, len(exchange_list)):
             historical_bids[e].append(exchange_list[e].get_bid())
@@ -97,10 +97,9 @@ async def get_historical_bids(test_length):
                 avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
             else:
                 avg_diff[e] = np.mean(diff_lists[e][-75000:])
-            mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
-        if x > 30000:
-            for investor in investors:
-                investor.invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
+            exchange_list[0].mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
+        for investor in investors:
+            investor.invest(exchange_list[0].mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
 
 if __name__ == "__main__":
     async_run(run(500000))
