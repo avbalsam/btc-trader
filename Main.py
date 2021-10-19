@@ -105,21 +105,21 @@ async def get_historical_bids(test_length):
             if mean_diff[e][-1] < 0:
                 sell_disc_count += 1
         # print(f"{buy_disc_count} {sell_disc_count}")
-        if buy_disc_count == len(exchange_list)-1 and investors[0].holding_crypto is False:
-            # TODO figure out why the below code can't be replaced by the above comment
-            #investors[0].usdt_to_btc(exchange_list[0].get_ask())
-            investors[0].holding_crypto = True
-            usdt = investors[0].holdings['usdt']
-            btc_value = (usdt - usdt * investors[0].commission) / float(exchange_list[0].best_ask)
-            investors[0].holdings['usdt'] -= usdt
-            investors[0].holdings['btc'] += btc_value
-            print(investors[0].name + " spent " + str(usdt) + " dollars in USDT to buy " + str(btc_value) +
-                  " bitcoins.\nTotal holdings: " + str(investors[0].holdings))
-            investors[0].transaction_history.append(
-                {'time': time.ctime(), 'transaction': 'usdt_to_btc', 'usdt': usdt, 'btc': btc_value})
-
-        if sell_disc_count == len(exchange_list)-2 and investors[0].holding_crypto is True:
-            investors[0].btc_to_usdt(exchange_list[0].get_bid())
+        if x > 75000:
+            if buy_disc_count == len(exchange_list)-1 and investors[0].holding_crypto is False:
+                # TODO figure out why the below code can't be replaced by the above comment
+                #investors[0].usdt_to_btc(exchange_list[0].get_ask())
+                investors[0].holding_crypto = True
+                usdt = investors[0].holdings['usdt']
+                btc_value = (usdt - usdt * investors[0].commission) / float(exchange_list[0].best_ask)
+                investors[0].holdings['usdt'] -= usdt
+                investors[0].holdings['btc'] += btc_value
+                print(investors[0].name + " spent " + str(usdt) + " dollars in USDT to buy " + str(btc_value) +
+                      " bitcoins.\nTotal holdings: " + str(investors[0].holdings))
+                investors[0].transaction_history.append(
+                    {'time': time.ctime(), 'transaction': 'usdt_to_btc', 'usdt': usdt, 'btc': btc_value})
+            if sell_disc_count == len(exchange_list)-2 and investors[0].holding_crypto is True:
+                investors[0].btc_to_usdt(exchange_list[0].get_bid())
 
         # TODO figure out source of recursion error on this function call and replace previous code with it
         # investors[0].invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
