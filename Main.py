@@ -4,6 +4,7 @@ import time
 import numpy as np
 import logging
 
+from cryptoxlib.Pair import Pair
 from cryptoxlib.version_conversions import async_run
 
 from binance import Binance
@@ -84,6 +85,8 @@ async def get_historical_bids(test_length):
             print(bids)
             print(avg_diff)
             print(f"Current holdings: {str(exchange_list[0].holdings)}")
+            if x % 1000 == 0:
+                print(await exchange_list[0].client.get_account_trades(pair=Pair('BTC', 'USDT')))
         buy_disc_count = 0
         sell_disc_count = 0
         for e in range(0, len(exchange_list)):
