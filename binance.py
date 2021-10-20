@@ -52,15 +52,18 @@ class Binance:
         usdt_amt = float(self.holdings['usdt'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / float(self.best_ask), 5)
         print(btc_value)
-        await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.MARKET,
-                                       quantity="0.1", time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+        await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
+                                       quantity="0.01", price=str(round(float(self.best_ask), 4)), time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
     async def sell_market(self):
         btc_amt = float(self.holdings['btc'])
-        await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.MARKET,
-                                       quantity=str(round(btc_amt, 5)-.00001), time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+        sell_price = str(round(float(self.best_bid), 4))
+        sell_amt = str(round(round(btc_amt, 4)-.0001, 4))
+        print(f"{sell_amt} {sell_price}")
+        await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
+                                       quantity=sell_amt, price=sell_price, time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
