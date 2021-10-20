@@ -18,6 +18,7 @@ class Binance:
         self.best_ask = float()
         self.mean_diff = list()
         self.holdings = {'btc': 0, 'usdt': 0}
+        self.commission = .00075
 
         self.api_key = "mf47OdnGELNlVentiyRGQOmKvl7HjpXn7zLPwA5xnOWSM5Dv3kCAwk4II81oQfLP"
         self.sec_key = "ABiqm9CQRV2tF9dQOaplFv8esOfqYFHyVDVjDVLK3AYvMk1qpNoSYy0mN8tMwR3f"
@@ -48,16 +49,18 @@ class Binance:
         print(f"Callback account_update: [{response}]")
 
     async def buy_market(self):
-        usdt_amt = self.holdings['usdt']
+        usdt_amt = float(self.holdings['usdt'])
+        btc_value = round((usdt_amt - usdt_amt * self.commission) / float(self.best_ask), 5)
+        print(btc_value)
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.MARKET,
-                                       quantity=str(usdt_amt),
+                                       quantity="0.4",
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
     async def sell_market(self):
         btc_amt = self.holdings['btc']
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.MARKET,
-                                       quantity=str(btc_amt),
+                                       quantity="0.4",
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
