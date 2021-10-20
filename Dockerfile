@@ -24,10 +24,6 @@ COPY hitbtc.py .
 
 RUN true
 
-COPY Investor.py .
-
-RUN true
-
 COPY requirements.txt .
 
 RUN true
