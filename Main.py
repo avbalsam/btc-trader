@@ -42,7 +42,7 @@ exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 async def run(invest_length):
     try:
         await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
-                             invest(invest_length))
+                             get_market_data(invest_length))
     except Exception as e:
         print(f"Error while starting websockets: {e}")
     while True:
@@ -57,7 +57,7 @@ async def run(invest_length):
         print(f"Out: {e}")
 
 
-async def invest(test_length):
+async def get_market_data(test_length):
     fields = [exchange.name for exchange in exchange_list]
     historical_bids = [list() for i in range(0, len(exchange_list))]
     diff_lists = [list() for i in range(0, len(exchange_list))]
