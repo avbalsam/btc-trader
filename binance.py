@@ -53,7 +53,7 @@ class Binance:
         btc_value = round((usdt_amt - usdt_amt * self.commission) / float(self.best_ask), 5)
         print(btc_value)
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
-                                       quantity="0.01", price=str(round(float(self.best_ask), 4)), time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+                                       quantity="0.4", price=str(round(float(self.best_ask), 4)), time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
