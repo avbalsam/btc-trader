@@ -122,7 +122,7 @@ async def get_historical_bids(test_length):
                       " bitcoins.\nTotal holdings: " + str(investors[0].holdings))
                 investors[0].transaction_history.append(
                     {'time': time.ctime(), 'transaction': 'usdt_to_btc', 'usdt': usdt, 'btc': btc_value})
-            if sell_disc_count == len(exchange_list)-2 and investors[0].holding_crypto is True:
+            if sell_disc_count == len(exchange_list)-2 and exchange_list[0].holdings['btc'] > 0:
                 try:
                     await exchange_list[0].sell_market()
                 except Exception as e:

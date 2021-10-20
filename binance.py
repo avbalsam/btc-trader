@@ -58,9 +58,9 @@ class Binance:
         await self.update_account_balances()
 
     async def sell_market(self):
-        btc_amt = self.holdings['btc']
+        btc_amt = float(self.holdings['btc'])
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.MARKET,
-                                       quantity="0.1", time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+                                       quantity=str(round(btc_amt, 5)-.00001), time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
