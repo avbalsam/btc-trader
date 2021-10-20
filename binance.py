@@ -49,6 +49,7 @@ class Binance:
         print(f"Callback account_update: [{response}]")
 
     async def buy_market(self):
+        """Buys .4 bitcoin at market price"""
         usdt_amt = float(self.holdings['usdt'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / float(self.best_ask), 5)
         print(btc_value)
@@ -58,6 +59,7 @@ class Binance:
         await self.update_account_balances()
 
     async def sell_market(self):
+        """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['btc'])
         sell_price = str(round(float(self.best_bid), 4))
         sell_amt = str(round(round(btc_amt, 4)-.0001, 4))
@@ -68,6 +70,7 @@ class Binance:
         await self.update_account_balances()
 
     async def update_account_balances(self):
+        """Updates self.holdings based on balances in client account"""
         account = await self.client.get_account(5000)
         btc = float(account['response']['balances'][1]['free'])
         usdt = float(account['response']['balances'][6]['free'])
