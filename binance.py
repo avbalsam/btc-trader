@@ -51,17 +51,17 @@ class Binance:
     async def buy_market(self):
         """Buys .4 bitcoin at market price"""
         usdt_amt = float(self.holdings['usdt'])
-        btc_value = round((usdt_amt - usdt_amt * self.commission) / float(self.best_ask), 5)
+        btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(), 5)
         print(btc_value)
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
-                                       quantity="0.4", price=str(round(float(self.best_ask), 4)), time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+                                       quantity="0.4", price=str(round(self.get_ask(), 4)), time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
     async def sell_market(self):
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['btc'])
-        sell_price = str(round(float(self.best_bid), 4))
+        sell_price = str(round(self.get_bid(), 4))
         sell_amt = str(round(round(btc_amt, 4)-.0001, 4))
         print(f"{sell_amt} {sell_price}")
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
