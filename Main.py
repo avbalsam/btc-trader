@@ -11,8 +11,6 @@ from bitforex import Bitforex
 from aax import AAX
 from hitbtc import Hitbtc
 
-from Investor import Investor
-
 
 def write_to_csv(filename, fields, data):
     """
@@ -58,10 +56,10 @@ async def run(invest_length):
         print(f"Out: {e}")
 
 
-investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 70}, {"disc_count": 2, "disc_size": -5}),
+"""investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 70}, {"disc_count": 2, "disc_size": -5}),
              Investor("Leonard", {"disc_count": 3, "disc_size": 55}, {"disc_count": 2, "disc_size": -5}),
              Investor("Amanda", {"disc_count": 3, "disc_size": 70}, {"disc_count": 3, "disc_size": 10}),
-             Investor("Ezra", {"disc_count": 3, "disc_size": 60}, {"disc_count": 2, "disc_size": -10})]
+             Investor("Ezra", {"disc_count": 3, "disc_size": 60}, {"disc_count": 2, "disc_size": -10})]"""
 
 
 async def get_historical_bids(test_length):
@@ -81,15 +79,11 @@ async def get_historical_bids(test_length):
             continue
         print(time.ctime() + str(bids) + " btc")
         if x % 100 == 0:
-            # print("Current time: " + time.ctime())
-            # print(f"{str(x)} loops completed...")
-            # print(bids)
-            # print(avg_diff)
+            print("Current time: " + time.ctime())
+            print(f"{str(x)} loops completed...")
+            print(bids)
+            print(avg_diff)
             print(f"Current holdings: {str(exchange_list[0].holdings)}")
-            # write_to_csv("bid_data", fields, historical_bids)
-            # write_to_csv("diffs_data", fields, diff_lists)
-            # write_to_csv("mean_diffs_data", fields, mean_diff)
-            # write_to_csv("investors_data", [investor.name for investor in investors], [investor.transaction_history for investor in investors])
         buy_disc_count = 0
         sell_disc_count = 0
         for e in range(0, len(exchange_list)):
@@ -105,10 +99,9 @@ async def get_historical_bids(test_length):
             if mean_diff[e][-1] < 0:
                 sell_disc_count += 1
         #print(f"{buy_disc_count} {sell_disc_count}")
+        # TODO Move buy/sell checks into another async function to run in parallel with price data collection
         if x > 75000:
             if buy_disc_count == len(exchange_list)-1 and exchange_list[0].holdings['usdt'] > 0:
-                # TODO figure out why the below code can't be replaced by the above comment
-                #investors[0].usdt_to_btc(exchange_list[0].get_ask())
                 try:
                     await exchange_list[0].buy_market()
                 except Exception as e:
@@ -119,8 +112,6 @@ async def get_historical_bids(test_length):
             except Exception as e:
                 print(f"Out: {e}")
 
-        # TODO figure out source of recursion error on this function call and replace previous code with it
-        # investors[0].invest(mean_diff, exchange_list[0].get_ask(), exchange_list[0].get_bid(), commission=.00075)
 
 if __name__ == "__main__":
     async_run(run(500000))
