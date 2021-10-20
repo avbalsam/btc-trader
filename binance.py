@@ -53,14 +53,14 @@ class Binance:
         btc_value = round((usdt_amt - usdt_amt * self.commission) / float(self.best_ask), 5)
         print(btc_value)
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.MARKET,
-                                       quantity="0.2", time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+                                       quantity="0.1", time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
     async def sell_market(self):
         btc_amt = self.holdings['btc']
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.MARKET,
-                                       quantity="0.2", time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+                                       quantity="0.1", time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                        new_order_response_type=enums.OrderResponseType.FULL)
         await self.update_account_balances()
 
