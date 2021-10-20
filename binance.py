@@ -43,7 +43,7 @@ class Binance:
         return float(self.best_bid)
 
     def get_ask(self):
-        return float(self.get_ask())
+        return float(self.best_ask)
 
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")
