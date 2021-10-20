@@ -106,10 +106,13 @@ async def get_historical_bids(test_length):
                 sell_disc_count += 1
         # print(f"{buy_disc_count} {sell_disc_count}")
         if x > 75000:
-            if buy_disc_count == len(exchange_list)-1 and investors[0].holding_crypto is False:
+            if buy_disc_count == len(exchange_list)-1 and exchange_list[0].holdings['usdt'] > 0:
                 # TODO figure out why the below code can't be replaced by the above comment
                 #investors[0].usdt_to_btc(exchange_list[0].get_ask())
-                await exchange_list[0].buy_market()
+                try:
+                    await exchange_list[0].buy_market()
+                except Exception as e:
+                    print(f"Out: {e}")
                 investors[0].holding_crypto = True
                 usdt = investors[0].holdings['usdt']
                 btc_value = (usdt - usdt * investors[0].commission) / float(exchange_list[0].best_ask)
@@ -120,7 +123,10 @@ async def get_historical_bids(test_length):
                 investors[0].transaction_history.append(
                     {'time': time.ctime(), 'transaction': 'usdt_to_btc', 'usdt': usdt, 'btc': btc_value})
             if sell_disc_count == len(exchange_list)-2 and investors[0].holding_crypto is True:
-                await exchange_list[0].sell_market()
+                try:
+                    await exchange_list[0].sell_market()
+                except Exception as e:
+                    print(f"Out: {e}")
                 investors[0].btc_to_usdt(exchange_list[0].get_bid())
 
         # TODO figure out source of recursion error on this function call and replace previous code with it
