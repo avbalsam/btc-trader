@@ -42,7 +42,7 @@ exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 async def run(invest_length):
     try:
         await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
-                             get_historical_bids(invest_length))
+                             invest(invest_length))
     except Exception as e:
         print(f"Error while starting websockets: {e}")
     while True:
@@ -57,13 +57,7 @@ async def run(invest_length):
         print(f"Out: {e}")
 
 
-"""investors = [Investor("Maxwell", {"disc_count": 3, "disc_size": 70}, {"disc_count": 2, "disc_size": -5}),
-             Investor("Leonard", {"disc_count": 3, "disc_size": 55}, {"disc_count": 2, "disc_size": -5}),
-             Investor("Amanda", {"disc_count": 3, "disc_size": 70}, {"disc_count": 3, "disc_size": 10}),
-             Investor("Ezra", {"disc_count": 3, "disc_size": 60}, {"disc_count": 2, "disc_size": -10})]"""
-
-
-async def get_historical_bids(test_length):
+async def invest(test_length):
     fields = [exchange.name for exchange in exchange_list]
     historical_bids = [list() for i in range(0, len(exchange_list))]
     diff_lists = [list() for i in range(0, len(exchange_list))]
@@ -75,7 +69,6 @@ async def get_historical_bids(test_length):
         bids = [e.get_bid() for e in exchange_list]
         if 0.0 in bids:
             x -= 1
-            # print(time.ctime() + str(bids))
             await asyncio.sleep(1)
             continue
         print(time.ctime() + str(bids) + " btc")
