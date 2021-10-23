@@ -49,14 +49,14 @@ class Binance:
         print(f"Callback account_update: [{response}]")
 
     async def buy_market(self):
-        """Buys .4 bitcoin at market price"""
+        """Buys 1 bitcoin at market price"""
         usdt_amt = float(self.holdings['usdt'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(), 5)
         sell_price = str(round(self.get_ask(), 4))
-        print(f"Buying .4 bitcoins for {sell_price} per bitcoin.")
-        if btc_value > 0.4:
+        print(f"Buying 1 bitcoin for {sell_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
+        if btc_value > 1:
             await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
-                                           quantity="0.4", price=sell_price,
+                                           quantity="1", price=sell_price,
                                            time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                            new_order_response_type=enums.OrderResponseType.FULL)
             await self.update_account_balances()
