@@ -57,7 +57,7 @@ async def run(invest_length):
         print(f"Out: {e}")
 
 
-async def get_market_data(test_length):
+async def get_market_data():
     fields = [exchange.name for exchange in exchange_list]
     historical_bids = [list() for i in range(0, len(exchange_list))]
     diff_lists = [list() for i in range(0, len(exchange_list))]
