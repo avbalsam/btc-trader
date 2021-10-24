@@ -67,7 +67,7 @@ class Binance:
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['btc'])
         sell_price = str(round(self.get_bid(), 4))
-        sell_amt = str(round(round(btc_amt, 4) - .0001, 4))
+        sell_amt = str(round(round(btc_amt, 4) - .00001, 4))
         print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
                                        quantity=sell_amt, price=sell_price, time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
