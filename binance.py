@@ -11,6 +11,11 @@ from cryptoxlib.Pair import Pair
 from cryptoxlib.version_conversions import async_run
 
 
+def truncate(n, decimals=0):
+    multiplier = 10 ** decimals
+    return int(n * multiplier) / multiplier
+
+
 class Binance:
     def __init__(self, testnet=True):
         self.name = "Binance"
@@ -52,7 +57,7 @@ class Binance:
         """Buys 1 bitcoin at market price"""
         usdt_amt = float(self.holdings['usdt'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(), 5)
-        sell_price = str(round(self.get_ask(), 4))
+        sell_price = str(truncate(self.get_ask(), 4))
         print(f"Buying 1 bitcoin for {sell_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
         if btc_value > 1:
             await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
@@ -67,7 +72,7 @@ class Binance:
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['btc'])
         sell_price = str(round(self.get_bid(), 4))
-        sell_amt = str(round(round(btc_amt, 4) - .00001, 4))
+        sell_amt = str(round(btc_amt, 5) - .00001)
         print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
         await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
                                        quantity=sell_amt, price=sell_price, time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
