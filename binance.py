@@ -93,3 +93,36 @@ class Binance:
             pass
         except Exception:
             print("Uncaught exception in Binance")
+
+    async def get_account_trades(self, symbol: Pair):
+        """Gets all account trades in nicely formatted dictionary
+
+        Args:
+            symbol (Pair): Pair object representing symbol pair to get trades of
+
+        Returns:
+            trades_formatted (dict): Nicely formatted dictionary containing important information about account trades"""
+        account = await self.client.get_account_trades(pair=symbol)
+        trades = account['response']
+        trades_formatted = list()
+        for trade in trades:
+            id = trade['id']
+            side = 'buy' if trade['isBuyer'] is True else 'sell'
+            price = trade['price']
+            qty = trade['qty']
+            quote_qty = trade['quoteQty']
+            commission = trade['commission']
+            t = {"id": id, "side": side, "price": price, "quantity": qty, "quote_qty": quote_qty, "commission": commission}
+            trades_formatted.append(t)
+        return trades_formatted
+
+    async def print_trades(self, symbol: Pair):
+        """Prints all trades made by account
+
+        Args:
+            symbol (Pair): Pair object representing symbol pair to get trades of"""
+        trades = await self.get_account_trades(symbol)
+        for trade in trades:
+            print(trade)
+        print(len(trades))
+
