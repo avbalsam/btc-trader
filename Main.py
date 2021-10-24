@@ -64,7 +64,9 @@ async def get_market_data(test_length):
     avg_diff = [e.get_bid() - exchange_list[0].get_bid() for e in exchange_list]
     mean_diff = [list() for i in range(0, len(exchange_list))]
     await exchange_list[0].update_account_balances()
-    for x in range(1, test_length):
+    x = 0
+    while True:
+        x += 1
         await asyncio.sleep(.05)
         bids = [e.get_bid() for e in exchange_list]
         if 0.0 in bids:
@@ -108,4 +110,4 @@ async def get_market_data(test_length):
 
 
 if __name__ == "__main__":
-    async_run(run(500000))
+    async_run(run())
