@@ -108,10 +108,10 @@ class Binance:
         for trade in trades:
             id = trade['id']
             side = 'buy' if trade['isBuyer'] is True else 'sell'
-            price = trade['price']
-            qty = trade['qty']
-            quote_qty = trade['quoteQty']
-            commission = trade['commission']
+            price = float(trade['price'])
+            qty = float(trade['qty'])
+            quote_qty = float(trade['quoteQty'])
+            commission = float(trade['commission'])
             t = {"id": id, "side": side, "price": price, "quantity": qty, "quote_qty": quote_qty, "commission": commission}
             trades_formatted.append(t)
         return trades_formatted
@@ -126,3 +126,28 @@ class Binance:
             print(trade)
         print(len(trades))
 
+    async def get_profit(self, symbol: Pair, commission=0.00075):
+        """Returns total profit taking commission into account.
+
+        Args:
+            symbol (Pair): Symbol pair to calculate profit for.
+            commission (float): commission charged on given transactions.
+
+        Returns:
+            total_profit (float): Profit gained during recorded account transactions
+        """
+        usdt_bal = float()
+        btc_bal = float()
+        total_usdt_traded = float()
+        trades = await self.get_account_trades(symbol)
+        for trade in trades:
+            total_usdt_traded += trade['quote_qty']
+            fees = trade['quote_qty'] * commission
+            if trade['side'] == 'buy':
+                btc_bal += trade['quantity']
+                usdt_bal -= (trade['quote_qty'] + commission)
+            if trade['side'] == 'sell':
+                usdt_bal += (trade['quote_qty'] - commission)
+                btc_bal -= trade['quantity']
+        total_profit = usdt_bal + btc_bal * self.get_bid()
+        return total_profit
