@@ -39,10 +39,10 @@ exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
 # LOG.addHandler(logging.StreamHandler())
 
 
-async def run(invest_length):
+async def run():
     try:
         await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
-                             get_market_data(invest_length))
+                             get_market_data())
     except Exception as e:
         print(f"Error while starting websockets: {e}")
     while True:
