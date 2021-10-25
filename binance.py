@@ -76,8 +76,9 @@ class Binance:
         print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
         try:
             await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
-                                       quantity=sell_amt, price=sell_price, time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
-                                       new_order_response_type=enums.OrderResponseType.FULL)
+                                           quantity=sell_amt, price=sell_price,
+                                           time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+                                           new_order_response_type=enums.OrderResponseType.FULL)
         except Exception as e:
             print(f"Out: {e}")
         await self.update_account_balances()
@@ -120,7 +121,8 @@ class Binance:
             qty = float(trade['qty'])
             quote_qty = float(trade['quoteQty'])
             commission = float(trade['commission'])
-            t = {"id": id, "side": side, "price": price, "quantity": qty, "quote_qty": quote_qty, "commission": commission}
+            t = {"id": id, "side": side, "price": price, "quantity": qty, "quote_qty": quote_qty,
+                 "commission": commission}
             trades_formatted.append(t)
         return trades_formatted
 
