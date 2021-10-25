@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 from datetime import datetime
@@ -137,7 +138,8 @@ class Binance:
         print(len(trades))
 
     async def get_profit(self, symbol: Pair, commission=0.00075):
-        """Returns total profit taking commission into account.
+        """Returns total profit taking commission into account. This may take time if best_bid
+        has not been generated yet.
 
         Args:
             symbol (Pair): Symbol pair to calculate profit for.
@@ -155,9 +157,17 @@ class Binance:
             fees = trade['quote_qty'] * commission
             if trade['side'] == 'buy':
                 btc_bal += trade['quantity']
-                usdt_bal -= (trade['quote_qty'] + trade['quote_qty'] * commission)
+                usdt_bal -= trade['quote_qty']
+                usdt_bal -= fees
             if trade['side'] == 'sell':
-                usdt_bal += (trade['quote_qty'] - trade['quote_qty'] * commission)
+                usdt_bal += trade['quote_qty']
+                usdt_bal -= fees
                 btc_bal -= trade['quantity']
+        print(btc_bal * self.get_bid())
+        print(btc_bal)
+        print(self.get_bid())
+        while self.get_bid() == 0.0:
+            print("no bid...")
+            await asyncio.sleep(1)
         total_profit = usdt_bal + btc_bal * self.get_bid()
         return total_profit
