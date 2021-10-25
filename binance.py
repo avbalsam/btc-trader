@@ -72,11 +72,14 @@ class Binance:
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['btc'])
         sell_price = str(truncate(self.get_bid(), 5))
-        sell_amt = str(truncate(btc_amt, 5) - 0.00001)
+        sell_amt = str(truncate(btc_amt, 4))
         print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
-        await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
+        try:
+            await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
                                        quantity=sell_amt, price=sell_price, time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                        new_order_response_type=enums.OrderResponseType.FULL)
+        except Exception as e:
+            print(f"Out: {e}")
         await self.update_account_balances()
 
     async def update_account_balances(self):
