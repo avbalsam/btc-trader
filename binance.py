@@ -155,9 +155,9 @@ class Binance:
             fees = trade['quote_qty'] * commission
             if trade['side'] == 'buy':
                 btc_bal += trade['quantity']
-                usdt_bal -= (trade['quote_qty'] + commission)
+                usdt_bal -= (trade['quote_qty'] + trade['quote_qty'] * commission)
             if trade['side'] == 'sell':
-                usdt_bal += (trade['quote_qty'] - commission)
+                usdt_bal += (trade['quote_qty'] - trade['quote_qty'] * commission)
                 btc_bal -= trade['quantity']
         total_profit = usdt_bal + btc_bal * self.get_bid()
         return total_profit
