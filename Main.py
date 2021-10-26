@@ -67,6 +67,8 @@ async def get_market_data():
     # print(await exchange_list[0].get_profit(Pair('BTC', 'USDT'), commission=.00075))
     # print(len(await exchange_list[0].get_account_trades(Pair('BTC', 'USDT'))))
     # print(await exchange_list[0].print_trades(Pair('BTC', 'USDT')))
+    # print(await exchange_list[0].get_profit(Pair('BTC', 'USDT')))
+    # return
     x = 0
     while True:
         x += 1
