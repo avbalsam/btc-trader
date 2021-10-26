@@ -171,11 +171,15 @@ class Binance:
                 usdt_bal += trade['quote_qty']
                 usdt_bal -= fees
                 btc_bal -= trade['quantity']
-        print(btc_bal * self.get_bid())
-        print(btc_bal)
-        print(self.get_bid())
         while self.get_bid() == 0.0:
             print("no bid...")
             await asyncio.sleep(1)
         total_profit = usdt_bal + btc_bal * self.get_bid()
         return total_profit
+
+    def get_volume(self, symbol: Pair):
+        total_usdt_traded = float()
+        trades = await self.get_account_trades(symbol)
+        for trade in trades:
+            total_usdt_traded += trade['quote_qty']
+        return total_usdt_traded
