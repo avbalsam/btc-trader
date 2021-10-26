@@ -45,16 +45,16 @@ class Binance:
             AccountSubscription(callbacks=[self.account_update])
         ])
 
-    def get_bid(self):
+    def get_bid(self) -> float:
         return float(self.best_bid)
 
-    def get_ask(self):
+    def get_ask(self) -> float:
         return float(self.best_ask)
 
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")
 
-    async def buy_market(self):
+    async def buy_market(self) -> None:
         """Buys 1 bitcoin at market price"""
         usdt_amt = float(self.holdings['usdt'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(), 5)
@@ -69,7 +69,7 @@ class Binance:
         else:
             print("Insufficient account balance to perform trade")
 
-    async def sell_market(self):
+    async def sell_market(self) -> None:
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['btc'])
         sell_price = str(truncate(self.get_bid(), 5))
@@ -84,7 +84,7 @@ class Binance:
             print(f"Out: {e}")
         await self.update_account_balances()
 
-    async def update_account_balances(self):
+    async def update_account_balances(self) -> None:
         """Updates self.holdings based on balances in client account"""
         account = await self.client.get_account(5000)
         btc = float(account['response']['balances'][1]['free'])
@@ -104,7 +104,7 @@ class Binance:
         except Exception:
             print("Uncaught exception in Binance")
 
-    async def get_account_trades(self, symbol: Pair):
+    async def get_account_trades(self, symbol: Pair) -> list:
         """Gets all account trades in nicely formatted dictionary
 
         Args:
@@ -135,7 +135,7 @@ class Binance:
                     all_trades.append(trade)
                 from_id = trades_formatted_from_id[-1]['id'] + 1
 
-    async def print_trades(self, symbol: Pair):
+    async def print_trades(self, symbol: Pair) -> None:
         """Prints all trades made by account
 
         Args:
@@ -145,7 +145,7 @@ class Binance:
             print(trade)
         print(len(trades))
 
-    async def get_profit(self, symbol: Pair, commission=0.00075):
+    async def get_profit(self, symbol: Pair, commission=0.00075) -> float:
         """Returns total profit taking commission into account. This may take time if best_bid
         has not been generated yet.
 
@@ -177,7 +177,7 @@ class Binance:
         total_profit = usdt_bal + btc_bal * self.get_bid()
         return total_profit
 
-    async def get_volume(self, symbol: Pair):
+    async def get_volume(self, symbol: Pair) -> float:
         total_usdt_traded = float()
         trades = await self.get_account_trades(symbol)
         for trade in trades:
