@@ -112,20 +112,28 @@ class Binance:
 
         Returns:
             trades_formatted (dict): Nicely formatted dictionary containing important information about account trades"""
-        account = await self.client.get_account_trades(pair=symbol)
-        trades = account['response']
-        trades_formatted = list()
-        for trade in trades:
-            id = trade['id']
-            side = 'buy' if trade['isBuyer'] is True else 'sell'
-            price = float(trade['price'])
-            qty = float(trade['qty'])
-            quote_qty = float(trade['quoteQty'])
-            commission = float(trade['commission'])
-            t = {"id": id, "side": side, "price": price, "quantity": qty, "quote_qty": quote_qty,
-                 "commission": commission}
-            trades_formatted.append(t)
-        return trades_formatted
+        from_id = 0
+        all_trades = list()
+        while True:
+            trades_from_id = await self.client.get_account_trades(pair=symbol, limit=1000, from_id=from_id)
+            trades_from_id = trades_from_id['response']
+            trades_formatted_from_id = list()
+            for trade in trades_from_id:
+                id = trade['id']
+                side = 'buy' if trade['isBuyer'] is True else 'sell'
+                price = float(trade['price'])
+                qty = float(trade['qty'])
+                quote_qty = float(trade['quoteQty'])
+                commission = float(trade['commission'])
+                t = {"id": id, "side": side, "price": price, "quantity": qty, "quote_qty": quote_qty,
+                     "commission": commission}
+                trades_formatted_from_id.append(t)
+            if len(trades_formatted_from_id) == 0:
+                return all_trades
+            else:
+                for trade in trades_formatted_from_id:
+                    all_trades.append(trade)
+                from_id = trades_formatted_from_id[-1]['id'] + 1
 
     async def print_trades(self, symbol: Pair):
         """Prints all trades made by account
