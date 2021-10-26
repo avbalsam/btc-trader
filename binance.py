@@ -177,7 +177,7 @@ class Binance:
         total_profit = usdt_bal + btc_bal * self.get_bid()
         return total_profit
 
-    def get_volume(self, symbol: Pair):
+    async def get_volume(self, symbol: Pair):
         total_usdt_traded = float()
         trades = await self.get_account_trades(symbol)
         for trade in trades:
