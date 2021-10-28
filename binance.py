@@ -87,8 +87,14 @@ class Binance:
     async def update_account_balances(self) -> None:
         """Updates self.holdings based on balances in client account"""
         account = await self.client.get_account(5000)
-        btc = float(account['response']['balances'][1]['free'])
-        usdt = float(account['response']['balances'][6]['free'])
+        assets = account['response']['balances']
+        btc = 0.0
+        usdt = 0.0
+        for a in range(0,len(assets)):
+            if assets[a]['asset'] == 'BTC':
+                btc = float(assets[a]['free'])
+            if assets[a]['asset'] == 'USDT':
+                usdt = float(assets[a]['free'])
         self.holdings = {'btc': btc, 'usdt': usdt}
         print(self.holdings)
 
