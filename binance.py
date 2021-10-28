@@ -55,19 +55,19 @@ class Binance:
         print(f"Callback account_update: [{response}]")
 
     async def buy_market(self) -> None:
-        """Buys 1 bitcoin at market price"""
+        """Buys 0.0014 bitcoin at market price"""
         usdt_amt = float(self.holdings['usdt'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(), 5)
-        sell_price = str(truncate(self.get_ask(), 5))
-        print(f"Buying 1 bitcoin for {sell_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
-        if btc_value > 1:
+        buy_price = str(truncate(self.get_ask(), 5))
+        print(f"Buying .0014 bitcoin for {buy_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
+        if btc_value > 0.0014:
             await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
-                                           quantity="1", price=sell_price,
+                                           quantity="0.0014", price=buy_price,
                                            time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                            new_order_response_type=enums.OrderResponseType.FULL)
-            await self.update_account_balances()
         else:
             print("Insufficient account balance to perform trade")
+        await self.update_account_balances()
 
     async def sell_market(self) -> None:
         """Attempts to sell all bitcoin at market price"""
