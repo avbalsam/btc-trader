@@ -32,7 +32,7 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(), Bitforex(), AAX(), Hitbtc()]
+exchange_list = [Binance(testnet=False), Bitforex(), AAX(), Hitbtc()]
 
 # LOG = logging.getLogger("cryptoxlib")
 # LOG.setLevel(logging.INFO)
