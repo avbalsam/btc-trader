@@ -85,6 +85,8 @@ async def get_market_data():
             print(bids)
             print(avg_diff)
             print(f"Current holdings: {str(exchange_list[0].holdings)}")
+            if x % 1000 == 0:
+                await exchange_list[0].update_account_balances()
         buy_disc_count = 0
         sell_disc_count = 0
         for e in range(0, len(exchange_list)):
@@ -99,7 +101,7 @@ async def get_market_data():
                 buy_disc_count += 1
             if mean_diff[e][-1] < 0:
                 sell_disc_count += 1
-        #print(f"{buy_disc_count} {sell_disc_count}")
+        print(f"{buy_disc_count} {sell_disc_count}")
         # TODO Move buy/sell checks into another async function to run in parallel with price data collection
         if x > 75000:
             if buy_disc_count == len(exchange_list)-1 and exchange_list[0].holdings['usdt'] > 0:
