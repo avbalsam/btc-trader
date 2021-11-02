@@ -39,24 +39,6 @@ exchange_list = [Binance(testnet=False), AAX(), Hitbtc()]
 # LOG.addHandler(logging.StreamHandler())
 
 
-async def run():
-    try:
-        await asyncio.gather(*[e.client.start_websockets() for e in exchange_list],
-                             get_market_data())
-    except Exception as e:
-        print(f"Error while starting websockets: {e}")
-    while True:
-        try:
-            await asyncio.gather(*[e.client.start_websockets() for e in exchange_list])
-            break
-        except Exception as e:
-            print(f"Error while restarting websockets {e}")
-    try:
-        await asyncio.gather(*[e.client.close() for e in exchange_list])
-    except Exception as e:
-        print(f"Out: {e}")
-
-
 async def get_market_data():
     fields = [exchange.name for exchange in exchange_list]
     historical_bids = [list() for i in range(0, len(exchange_list))]
@@ -78,7 +60,7 @@ async def get_market_data():
             x -= 1
             await asyncio.sleep(1)
             continue
-        print(time.ctime() + str(bids) + " btc")
+        print(f"{time.ctime()} {bids}")
         if x % 100 == 0:
             print("Current time: " + time.ctime())
             print(f"{str(x)} loops completed...")
@@ -101,7 +83,7 @@ async def get_market_data():
                 buy_disc_count += 1
             if mean_diff[e][-1] < 0:
                 sell_disc_count += 1
-        #print(f"{buy_disc_count} {sell_disc_count}")
+        # print(f"{buy_disc_count} {sell_disc_count}")
         # TODO Move buy/sell checks into another async function to run in parallel with price data collection
         if x > 75000:
             if buy_disc_count == len(exchange_list)-1 and exchange_list[0].holdings['usdt'] > 0:
@@ -114,6 +96,18 @@ async def get_market_data():
                 await exchange_list[0].sell_market()
             except Exception as e:
                 print(f"Out: {e}")
+
+
+async def run():
+    await asyncio.gather(*[start_websockets(e) for e in exchange_list], get_market_data())
+
+
+async def start_websockets(exchange):
+    while True:
+        try:
+            await exchange.client.start_websockets()
+        except Exception as e:
+            print(f"{exchange.name} errored out: {e}. Restarting websocket...")
 
 
 if __name__ == "__main__":
