@@ -22,7 +22,7 @@ class Hitbtc():
 
         # Bundle several subscriptions into a single websocket
         self.client.compose_subscriptions([
-            OrderbookSubscription(pair=Pair("BTC", "USD"), callbacks=[self.order_book_update])
+            TickerSubscription(pair=Pair("BTC", "USD"), callbacks=[self.order_book_update])
         ])
 
     def get_bid(self):
@@ -31,14 +31,14 @@ class Hitbtc():
     def get_ask(self):
         return float(self.best_ask)
 
-    async def start_websockets(self) -> None:
+    async def start_websockets(self, loop) -> None:
         await self.client.start_websockets()
 
     async def order_book_update(self, response: dict) -> None:
         # print(f"Callback order_book_update: [{response}]")
         try:
-            self.best_ask = response['params']['ask'][0]['price']
-            self.best_bid = response['params']['bid'][0]['price']
+            self.best_ask = response['params']['ask']
+            self.best_bid = response['params']['bid']
         except KeyError:
             print(f"Callback order_book_update: [{response}]")
         except IndexError:

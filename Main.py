@@ -11,6 +11,7 @@ from binance import Binance
 from bitforex import Bitforex
 from aax import AAX
 from hitbtc import Hitbtc
+from ku import KuCoin
 
 
 def write_to_csv(filename, fields, data):
@@ -32,7 +33,7 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(testnet=False), AAX(), Hitbtc()]
+exchange_list = [Binance(testnet=False), AAX(), Hitbtc(), KuCoin()]
 
 # LOG = logging.getLogger("cryptoxlib")
 # LOG.setLevel(logging.INFO)
@@ -59,6 +60,7 @@ async def get_market_data():
         if 0.0 in bids:
             x -= 1
             await asyncio.sleep(1)
+            print(bids)
             continue
         print(f"{time.ctime()} {bids}")
         if x % 100 == 0:
@@ -98,17 +100,19 @@ async def get_market_data():
                 print(f"Out: {e}")
 
 
-async def run():
-    await asyncio.gather(*[start_websockets(e) for e in exchange_list], get_market_data())
+async def run(loop):
+    await asyncio.gather(*[start_websockets(e, loop) for e in exchange_list], get_market_data())
 
 
-async def start_websockets(exchange):
+async def start_websockets(exchange, loop):
     while True:
         try:
-            await exchange.start_websockets()
+            await exchange.start_websockets(loop)
         except Exception as e:
             print(f"{exchange.name} errored out: {e}. Restarting websocket...")
 
 
 if __name__ == "__main__":
-    async_run(run())
+    loop = asyncio.get_event_loop()
+    results = asyncio.gather(*[start_websockets(e, loop) for e in exchange_list], get_market_data())
+    loop.run_until_complete(results)

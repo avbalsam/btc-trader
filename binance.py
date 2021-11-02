@@ -102,7 +102,7 @@ class Binance:
         self.holdings = {'btc': btc, 'usdt': usdt}
         print(self.holdings)
 
-    async def start_websockets(self) -> None:
+    async def start_websockets(self, loop) -> None:
         await self.client.start_websockets()
 
     async def orderbook_ticker_update(self, response: dict) -> None:
