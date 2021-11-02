@@ -32,7 +32,7 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(testnet=False), Bitforex(), AAX(), Hitbtc()]
+exchange_list = [Binance(testnet=False), AAX(), Hitbtc()]
 
 # LOG = logging.getLogger("cryptoxlib")
 # LOG.setLevel(logging.INFO)
@@ -101,7 +101,7 @@ async def get_market_data():
                 buy_disc_count += 1
             if mean_diff[e][-1] < 0:
                 sell_disc_count += 1
-        print(f"{buy_disc_count} {sell_disc_count}")
+        #print(f"{buy_disc_count} {sell_disc_count}")
         # TODO Move buy/sell checks into another async function to run in parallel with price data collection
         if x > 75000:
             if buy_disc_count == len(exchange_list)-1 and exchange_list[0].holdings['usdt'] > 0:
@@ -109,7 +109,7 @@ async def get_market_data():
                     await exchange_list[0].buy_market()
                 except Exception as e:
                     print(f"Out: {e}")
-        if sell_disc_count == len(exchange_list)-2 and float(exchange_list[0].holdings['btc']) >= .001:
+        if sell_disc_count == len(exchange_list)-1 and float(exchange_list[0].holdings['btc']) >= .001:
             try:
                 await exchange_list[0].sell_market()
             except Exception as e:
