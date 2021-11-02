@@ -53,6 +53,10 @@ class Binance:
 
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")
+        if response['e'] == 'outboundAccountPosition':
+            assets = response['data']
+            for asset in assets:
+                print(asset)
 
     async def buy_market(self) -> None:
         """Buys 0.0014 bitcoin at market price"""
@@ -90,13 +94,16 @@ class Binance:
         assets = account['response']['balances']
         btc = 0.0
         usdt = 0.0
-        for a in range(0,len(assets)):
+        for a in range(0, len(assets)):
             if assets[a]['asset'] == 'BTC':
                 btc = float(assets[a]['free'])
             if assets[a]['asset'] == 'USDT':
                 usdt = float(assets[a]['free'])
         self.holdings = {'btc': btc, 'usdt': usdt}
         print(self.holdings)
+
+    async def start_websockets(self) -> None:
+        await self.client.start_websockets()
 
     async def orderbook_ticker_update(self, response: dict) -> None:
         # print(f"Callback orderbook_ticker_update: [{response}]")

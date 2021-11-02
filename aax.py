@@ -32,6 +32,9 @@ class AAX:
     def get_ask(self):
         return float(self.best_ask)
 
+    async def start_websockets(self) -> None:
+        await self.client.start_websockets()
+
     async def order_book_update(self, response: dict) -> None:
         # print(f"Callback order_book_update: [{response}]")
         try:

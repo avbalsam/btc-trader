@@ -105,7 +105,7 @@ async def run():
 async def start_websockets(exchange):
     while True:
         try:
-            await exchange.client.start_websockets()
+            await exchange.start_websockets()
         except Exception as e:
             print(f"{exchange.name} errored out: {e}. Restarting websocket...")
 
