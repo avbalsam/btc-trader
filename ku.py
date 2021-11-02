@@ -3,9 +3,12 @@ import asyncio
 from kucoin.client import Client
 from kucoin.asyncio import KucoinSocketManager
 
+from exchange import Exchange
 
-class KuCoin:
+
+class KuCoin(Exchange):
     def __init__(self):
+        super().__init__()
         global loop
 
         api_key = '617bad17b6ab210001dd3593'
@@ -13,8 +16,6 @@ class KuCoin:
         api_passphrase = 'Avrahamthegreat1@'
 
         self.client = Client(api_key, api_secret, api_passphrase)
-        self.best_bid = float()
-        self.best_ask = float()
         self.name = "KuCoin"
 
     async def start_websockets(self, loop):
@@ -24,11 +25,5 @@ class KuCoin:
     async def order_book_update(self, msg):
         # print(f"Callback order book update: {msg}")
         if msg['topic'] == '/market/ticker:BTC-USDT':
-            self.best_ask = msg['data']['bestAsk']
-            self.best_bid = msg['data']['bestBid']
-
-    def get_bid(self):
-        return float(self.best_bid)
-
-    def get_ask(self):
-        return float(self.best_ask)
+            self.best_ask_by_symbol['BTC'] = msg['data']['bestAsk']
+            self.best_bid_by_symbol['BTC'] = msg['data']['bestBid']

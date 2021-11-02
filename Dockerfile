@@ -28,6 +28,10 @@ COPY ku.py .
 
 RUN true
 
+COPY exchange.py .
+
+RUN true
+
 COPY requirements.txt .
 
 RUN true

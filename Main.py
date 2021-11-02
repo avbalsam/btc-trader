@@ -40,11 +40,11 @@ exchange_list = [Binance(testnet=False), AAX(), Hitbtc(), KuCoin()]
 # LOG.addHandler(logging.StreamHandler())
 
 
-async def get_market_data():
+async def get_market_data(symbol):
     fields = [exchange.name for exchange in exchange_list]
     historical_bids = [list() for i in range(0, len(exchange_list))]
     diff_lists = [list() for i in range(0, len(exchange_list))]
-    avg_diff = [e.get_bid() - exchange_list[0].get_bid() for e in exchange_list]
+    avg_diff = [e.get_bid(symbol) - exchange_list[0].get_bid(symbol) for e in exchange_list]
     mean_diff = [list() for i in range(0, len(exchange_list))]
     await exchange_list[0].update_account_balances()
     # print(await exchange_list[0].get_profit(Pair('BTC', 'USDT'), commission=.00075))
@@ -56,7 +56,7 @@ async def get_market_data():
     while True:
         x += 1
         await asyncio.sleep(.05)
-        bids = [e.get_bid() for e in exchange_list]
+        bids = [e.get_bid(symbol) for e in exchange_list]
         if 0.0 in bids:
             x -= 1
             await asyncio.sleep(1)
@@ -74,8 +74,8 @@ async def get_market_data():
         buy_disc_count = 0
         sell_disc_count = 0
         for e in range(0, len(exchange_list)):
-            historical_bids[e].append(exchange_list[e].get_bid())
-            diff_lists[e].append(exchange_list[e].get_bid() - exchange_list[0].get_bid())
+            historical_bids[e].append(exchange_list[e].get_bid(symbol))
+            diff_lists[e].append(exchange_list[e].get_bid(symbol) - exchange_list[0].get_bid(symbol))
             if x <= 75000:
                 avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
             else:
@@ -114,5 +114,5 @@ async def start_websockets(exchange, loop):
 
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
-    results = asyncio.gather(*[start_websockets(e, loop) for e in exchange_list], get_market_data())
+    results = asyncio.gather(*[start_websockets(e, loop) for e in exchange_list], get_market_data('BTC'))
     loop.run_until_complete(results)

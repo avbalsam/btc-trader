@@ -11,18 +11,17 @@ from cryptoxlib.clients.binance.enums import Interval, TimeInForce
 from cryptoxlib.Pair import Pair
 from cryptoxlib.version_conversions import async_run
 
+from exchange import Exchange
 
 def truncate(n, decimals=0):
     multiplier = 10 ** decimals
     return int(n * multiplier) / multiplier
 
 
-class Binance:
+class Binance(Exchange):
     def __init__(self, testnet=True):
+        super().__init__()
         self.name = "Binance"
-        self.best_bid = float()
-        self.best_ask = float()
-        self.mean_diff = list()
         self.holdings = {'btc': 0, 'usdt': 0}
         self.commission = .00075
 
@@ -44,12 +43,6 @@ class Binance:
         self.client.compose_subscriptions([
             AccountSubscription(callbacks=[self.account_update])
         ])
-
-    def get_bid(self) -> float:
-        return float(self.best_bid)
-
-    def get_ask(self) -> float:
-        return float(self.best_ask)
 
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")
@@ -108,8 +101,8 @@ class Binance:
     async def orderbook_ticker_update(self, response: dict) -> None:
         # print(f"Callback orderbook_ticker_update: [{response}]")
         try:
-            self.best_ask = response['data']['a']
-            self.best_bid = response['data']['b']
+            self.best_ask_by_symbol['BTC'] = response['data']['a']
+            self.best_bid_by_symbol['BTC'] = response['data']['b']
         except KeyError:
             print(f"Out: [{response}]")
         except IndexError:

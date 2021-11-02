@@ -9,15 +9,16 @@ from cryptoxlib.clients.bitforex.BitforexWebsocket import OrderBookSubscription,
     Ticker24hSubscription
 from cryptoxlib.version_conversions import async_run
 
+from exchange import Exchange
 
-class Bitforex:
+
+class Bitforex(Exchange):
     def __init__(self):
+        super().__init__()
         api_key = "5c93be0edb56bde9adde22997b87ceb6"
         sec_key = "cd0918f37fa80a73254d7189929d5d09"
 
         self.client = CryptoXLib.create_bitforex_client(api_key, sec_key)
-        self.best_bid = float()
-        self.best_ask = float()
         self.name = "Bitforex"
 
         # Bundle several subscriptions into a single websocket
@@ -25,23 +26,13 @@ class Bitforex:
             OrderBookSubscription(pair=Pair('BTC', 'USDT'), depth="0", callbacks=[self.order_book_update])
         ])
 
-    def get_bid(self):
-        return float(self.best_bid)
-
-    def get_ask(self):
-        return float(self.best_ask)
-
     async def start_websockets(self, loop) -> None:
         await self.client.start_websockets()
 
     async def order_book_update(self, response: dict) -> None:
         # print(f"Callback order_book_update: [{response}]")
         try:
-            self.best_bid = response['data']['bids'][0]['price']
-            self.best_ask = response['data']['asks'][0]['price']
+            self.best_bid_by_symbol['BTC'] = response['data']['bids'][0]['price']
+            self.best_ask_by_symbol['BTC'] = response['data']['asks'][0]['price']
         except KeyError:
             print(f"Out: [{response}]")
-        except IndexError:
-            pass
-        except Exception:
-            print("Uncaught exception in Bitforex")
