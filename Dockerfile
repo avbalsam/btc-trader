@@ -24,6 +24,10 @@ COPY hitbtc.py .
 
 RUN true
 
+COPY ku.py .
+
+RUN true
+
 COPY requirements.txt .
 
 RUN true
