@@ -126,12 +126,12 @@ async def get_market_data(symbol):
         if x > 75000:
             if buy_disc_count == len(exchange_list)-2 and exchange_list[0].holdings['usdt'] > 0:
                 try:
-                    await exchange_list[0].buy_market()
+                    await exchange_list[0].buy_market(symbol)
                 except Exception as e:
                     print(f"Out: {e}")
         if sell_disc_count == len(exchange_list)-2 and float(exchange_list[0].holdings['btc']) >= .0001:
             try:
-                await exchange_list[0].sell_market()
+                await exchange_list[0].sell_market(symbol)
             except Exception as e:
                 print(f"Out: {e}")
 

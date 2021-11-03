@@ -51,11 +51,11 @@ class Binance(Exchange):
             for asset in assets:
                 print(asset)
 
-    async def buy_market(self) -> None:
+    async def buy_market(self, symbol: str) -> None:
         """Buys 0.0014 bitcoin at market price"""
         usdt_amt = float(self.holdings['usdt'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(), 5)
-        buy_price = str(truncate(self.get_ask(), 5))
+        buy_price = str(truncate(self.get_ask(symbol), 5))
         print(f"Buying .0014 bitcoin for {buy_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
         if btc_value > 0.0014:
             await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
@@ -66,10 +66,10 @@ class Binance(Exchange):
             print("Insufficient account balance to perform trade")
         await self.update_account_balances()
 
-    async def sell_market(self) -> None:
+    async def sell_market(self, symbol: str) -> None:
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['btc'])
-        sell_price = str(truncate(self.get_bid(), 5))
+        sell_price = str(truncate(self.get_bid(symbol), 5))
         sell_amt = str(truncate(btc_amt, 4))
         print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
         try:
