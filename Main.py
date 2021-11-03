@@ -105,7 +105,6 @@ async def get_market_data(symbol):
             print(f"Current holdings. BTC: {exchange_list[0].holdings['BTC']}, "
                   f"USDT: {exchange_list[0].holdings['USDT']}")
             if x % 1000 == 0:
-                # await exchange_list[0].update_account_balances()
                 write_to_csv('bid_data', fields, historical_bids)
                 write_to_csv('diffs_data', fields, diff_lists)
                 write_to_csv('mean_diffs_data', fields, mean_diff)
