@@ -49,7 +49,7 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(testnet=True), AAX(), Hitbtc(), KuCoin()]
+exchange_list = [Binance(testnet=False), AAX(), Hitbtc(), KuCoin()]
 
 # LOG = logging.getLogger("cryptoxlib")
 # LOG.setLevel(logging.INFO)
