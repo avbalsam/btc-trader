@@ -49,7 +49,7 @@ def write_to_csv(filename, fields, data):
 
 
 # initialize all exchanges using their constructors
-exchange_list = [Binance(testnet=False), AAX(), Hitbtc(), KuCoin()]
+exchange_list = [Binance(testnet=True), AAX(), Hitbtc(), KuCoin()]
 
 # LOG = logging.getLogger("cryptoxlib")
 # LOG.setLevel(logging.INFO)
@@ -82,6 +82,7 @@ async def get_market_data(symbol):
     except:
         print("Mean diff not initialized.")
     x = len(historical_bids)
+    await exchange_list[0].update_account_balances()
     while True:
         x += 1
         await asyncio.sleep(.05)
@@ -93,17 +94,18 @@ async def get_market_data(symbol):
             continue
         print(f"{time.ctime()} {bids}")
         if x % 100 == 0:
-            if x > 75000:
-                historical_bids = historical_bids[-75000:]
-                diff_lists = diff_lists[-75000:]
-                mean_diff = mean_diff[-75000:]
+            if x > 50000:
+                historical_bids = historical_bids[-50000:]
+                diff_lists = diff_lists[-50000:]
+                mean_diff = mean_diff[-50000:]
             print("Current time: " + time.ctime())
             print(f"{str(x)} loops completed...")
             print(bids)
             print(avg_diff)
-            print(f"Current holdings: {str(exchange_list[0].holdings)}")
+            print(f"Current holdings. BTC: {exchange_list[0].holdings['BTC']}, "
+                  f"USDT: {exchange_list[0].holdings['USDT']}")
             if x % 1000 == 0:
-                await exchange_list[0].update_account_balances()
+                # await exchange_list[0].update_account_balances()
                 write_to_csv('bid_data', fields, historical_bids)
                 write_to_csv('diffs_data', fields, diff_lists)
                 write_to_csv('mean_diffs_data', fields, mean_diff)
@@ -112,10 +114,10 @@ async def get_market_data(symbol):
         for e in range(0, len(exchange_list)):
             historical_bids[e].append(exchange_list[e].get_bid(symbol))
             diff_lists[e].append(exchange_list[e].get_bid(symbol) - exchange_list[0].get_bid(symbol))
-            if x <= 75000:
+            if x <= 50000:
                 avg_diff[e] = avg_diff[e] * ((x - 1) / x) + diff_lists[e][-1] / x
             else:
-                avg_diff[e] = np.mean(diff_lists[e][-75000:])
+                avg_diff[e] = np.mean(diff_lists[e][-50000:])
             mean_diff[e].append(diff_lists[e][-1] - avg_diff[e])
             if mean_diff[e][-1] > 65:
                 buy_disc_count += 1
@@ -123,13 +125,13 @@ async def get_market_data(symbol):
                 sell_disc_count += 1
         # print(f"{buy_disc_count} {sell_disc_count}")
         # TODO Move buy/sell checks into another async function to run in parallel with price data collection
-        if x > 75000:
-            if buy_disc_count == len(exchange_list)-2 and exchange_list[0].holdings['usdt'] > 0:
+        if x > 50000:
+            if buy_disc_count >= len(exchange_list)-2 and exchange_list[0].holdings['USDT'] > 0:
                 try:
                     await exchange_list[0].buy_market(symbol)
                 except Exception as e:
                     print(f"Out: {e}")
-        if sell_disc_count == len(exchange_list)-2 and float(exchange_list[0].holdings['btc']) >= .0001:
+        if sell_disc_count >= len(exchange_list)-2 and float(exchange_list[0].holdings['BTC']) >= .001:
             try:
                 await exchange_list[0].sell_market(symbol)
             except Exception as e:

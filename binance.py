@@ -22,7 +22,7 @@ class Binance(Exchange):
     def __init__(self, testnet=True):
         super().__init__()
         self.name = "Binance"
-        self.holdings = {'btc': 0, 'usdt': 0}
+        self.holdings = {'BTC': 0, 'USDT': 0}
         self.commission = .00075
 
         self.api_key = "mf47OdnGELNlVentiyRGQOmKvl7HjpXn7zLPwA5xnOWSM5Dv3kCAwk4II81oQfLP"
@@ -47,13 +47,15 @@ class Binance(Exchange):
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")
         if response['data']['e'] == 'outboundAccountPosition':
-            assets = response['data']
+            assets = response['data']['B']
             for asset in assets:
-                print(asset)
+                symbol = asset['a']
+                quantity = asset['f']
+                self.holdings[symbol] = float(quantity)
 
     async def buy_market(self, symbol: str) -> None:
         """Buys 0.0014 bitcoin at market price"""
-        usdt_amt = float(self.holdings['usdt'])
+        usdt_amt = float(self.holdings['USDT'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol), 5)
         buy_price = str(truncate(self.get_ask(symbol), 5))
         print(f"Buying .0014 bitcoin for {buy_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
@@ -64,11 +66,10 @@ class Binance(Exchange):
                                            new_order_response_type=enums.OrderResponseType.FULL)
         else:
             print("Insufficient account balance to perform trade")
-        await self.update_account_balances()
 
     async def sell_market(self, symbol: str) -> None:
         """Attempts to sell all bitcoin at market price"""
-        btc_amt = float(self.holdings['btc'])
+        btc_amt = float(self.holdings['BTC'])
         sell_price = str(truncate(self.get_bid(symbol), 5))
         sell_amt = str(truncate(btc_amt, 4))
         print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
@@ -79,20 +80,15 @@ class Binance(Exchange):
                                            new_order_response_type=enums.OrderResponseType.FULL)
         except Exception as e:
             print(f"Out: {e}")
-        await self.update_account_balances()
 
     async def update_account_balances(self) -> None:
         """Updates self.holdings based on balances in client account"""
         account = await self.client.get_account(5000)
         assets = account['response']['balances']
-        btc = 0.0
-        usdt = 0.0
         for a in range(0, len(assets)):
-            if assets[a]['asset'] == 'BTC':
-                btc = float(assets[a]['free'])
-            if assets[a]['asset'] == 'USDT':
-                usdt = float(assets[a]['free'])
-        self.holdings = {'btc': btc, 'usdt': usdt}
+            symbol = assets[a]['asset']
+            quantity = assets[a]['free']
+            self.holdings[symbol] = float(quantity)
         print(self.holdings)
 
     async def start_websockets(self, loop) -> None:
