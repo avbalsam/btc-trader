@@ -46,7 +46,7 @@ class Binance(Exchange):
 
     async def account_update(self, response: dict) -> None:
         print(f"Callback account_update: [{response}]")
-        if response['e'] == 'outboundAccountPosition':
+        if response['data']['e'] == 'outboundAccountPosition':
             assets = response['data']
             for asset in assets:
                 print(asset)
@@ -54,7 +54,7 @@ class Binance(Exchange):
     async def buy_market(self, symbol: str) -> None:
         """Buys 0.0014 bitcoin at market price"""
         usdt_amt = float(self.holdings['usdt'])
-        btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(), 5)
+        btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol), 5)
         buy_price = str(truncate(self.get_ask(symbol), 5))
         print(f"Buying .0014 bitcoin for {buy_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
         if btc_value > 0.0014:
