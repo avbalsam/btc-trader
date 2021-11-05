@@ -57,7 +57,7 @@ class Binance(Exchange):
         """Buys 0.0014 bitcoin at market price"""
         usdt_amt = float(self.holdings['USDT'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol), 5)
-        buy_price = str(truncate(self.get_ask(symbol), 5)+1)
+        buy_price = str(truncate(self.get_ask(symbol), 5))
         print(f"Buying .0014 bitcoin for {buy_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
         if btc_value > 0.0014:
             await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
