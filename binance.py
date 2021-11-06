@@ -70,7 +70,7 @@ class Binance(Exchange):
     async def sell_market(self, symbol: str) -> None:
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['BTC'])
-        sell_price = str(truncate(await client.get_price_ticker(pair=Pair("BTC", "USDT"))["data"]["b"], 5))
+        sell_price = str(truncate(await self.client.get_price_ticker(pair=Pair("BTC", "USDT"))["data"]["b"], 5))
         sell_amt = str(truncate(btc_amt, 5))
         print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
         try:
