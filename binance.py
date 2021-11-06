@@ -106,18 +106,18 @@ class Binance(Exchange):
         except Exception:
             print("Uncaught exception in Binance")
 
-    async def get_account_trades(self, symbol: Pair) -> list:
+    async def get_account_trades(self, symbol: str) -> list:
         """Gets all account trades in nicely formatted dictionary
 
         Args:
-            symbol (Pair): Pair object representing symbol pair to get trades of
+            symbol (str): String representing symbol pair to get trades of
 
         Returns:
             trades_formatted (dict): Nicely formatted dictionary containing important information about account trades"""
         from_id = 0
         all_trades = list()
         while True:
-            trades_from_id = await self.client.get_account_trades(pair=symbol, limit=1000, from_id=from_id)
+            trades_from_id = await self.client.get_account_trades(pair=Pair(symbol, 'USDT'), limit=1000, from_id=from_id)
             trades_from_id = trades_from_id['response']
             trades_formatted_from_id = list()
             for trade in trades_from_id:
@@ -137,22 +137,22 @@ class Binance(Exchange):
                     all_trades.append(trade)
                 from_id = trades_formatted_from_id[-1]['id'] + 1
 
-    async def print_trades(self, symbol: Pair) -> None:
+    async def print_trades(self, symbol: str) -> None:
         """Prints all trades made by account
 
         Args:
-            symbol (Pair): Pair object representing symbol pair to get trades of"""
+            symbol (str): String representing symbol pair to get trades of"""
         trades = await self.get_account_trades(symbol)
         for trade in trades:
             print(trade)
         print(len(trades))
 
-    async def get_profit(self, symbol: Pair, commission=0.00075) -> float:
+    async def get_profit(self, symbol: str, commission=0.00075) -> float:
         """Returns total profit taking commission into account. This may take time if best_bid
         has not been generated yet.
 
         Args:
-            symbol (Pair): Symbol pair to calculate profit for.
+            symbol (str): Symbol pair to calculate profit for.
             commission (float): commission charged on given transactions.
 
         Returns:
@@ -173,13 +173,13 @@ class Binance(Exchange):
                 usdt_bal += trade['quote_qty']
                 usdt_bal -= fees
                 btc_bal -= trade['quantity']
-        while self.get_bid() == 0.0:
+        while self.get_bid(symbol) == 0.0:
             print("no bid...")
             await asyncio.sleep(1)
-        total_profit = usdt_bal + btc_bal * self.get_bid()
+        total_profit = usdt_bal + btc_bal * self.get_bid(symbol)
         return total_profit
 
-    async def get_volume(self, symbol: Pair) -> float:
+    async def get_volume(self, symbol: str) -> float:
         total_usdt_traded = float()
         trades = await self.get_account_trades(symbol)
         for trade in trades:

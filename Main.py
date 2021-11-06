@@ -63,10 +63,10 @@ async def get_market_data(symbol):
     avg_diff = [e.get_bid(symbol) - exchange_list[0].get_bid(symbol) for e in exchange_list]
     mean_diff = [list() for i in range(0, len(exchange_list))]
     await exchange_list[0].update_account_balances()
-    # print(await exchange_list[0].get_profit(Pair('BTC', 'USDT'), commission=.00075))
-    # print(len(await exchange_list[0].get_account_trades(Pair('BTC', 'USDT'))))
-    # print(await exchange_list[0].print_trades(Pair('BTC', 'USDT')))
-    # print(await exchange_list[0].get_profit(Pair('BTC', 'USDT')))
+    # print(await exchange_list[0].get_profit('BTC', commission=.00075))
+    # print(len(await exchange_list[0].get_account_trades('BTC')))
+    # print(await exchange_list[0].print_trades('BTC'))
+    # print(await exchange_list[0].get_volume('BTC'))
     # return
     x = 0
     try:
