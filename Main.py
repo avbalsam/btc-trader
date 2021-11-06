@@ -125,12 +125,12 @@ async def get_market_data(symbol):
         # print(f"{buy_disc_count} {sell_disc_count}")
         # TODO Move buy/sell checks into another async function to run in parallel with price data collection
         if x > 50000:
-            if buy_disc_count >= len(exchange_list)-2 and exchange_list[0].holdings['USDT'] > 0:
+            if buy_disc_count >= len(exchange_list)-1 and exchange_list[0].holdings['USDT'] > 0:
                 try:
                     await exchange_list[0].buy_market(symbol)
                 except Exception as e:
                     print(f"Out: {e}")
-        if sell_disc_count >= len(exchange_list)-2 and float(exchange_list[0].holdings['BTC']) >= .00001:
+        if sell_disc_count >= len(exchange_list)-1 and float(exchange_list[0].holdings['BTC']) >= .001:
             try:
                 await exchange_list[0].sell_market(symbol)
             except Exception as e:

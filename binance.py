@@ -13,7 +13,8 @@ from cryptoxlib.version_conversions import async_run
 
 from exchange import Exchange
 
-def truncate(n, decimals=0):
+
+def truncate(n: float, decimals=0):
     multiplier = 10 ** decimals
     return int(n * multiplier) / multiplier
 
@@ -55,22 +56,31 @@ class Binance(Exchange):
 
     async def buy_market(self, symbol: str) -> None:
         """Buys 0.0014 bitcoin at market price"""
+        expected_buy_price = self.get_ask(symbol)
         usdt_amt = float(self.holdings['USDT'])
         btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol), 5)
-        buy_price = str(truncate(self.get_ask(symbol), 5))
-        print(f"Buying .0014 bitcoin for {buy_price} per bitcoin. Btc value of current USDT balance: {btc_value}")
         if btc_value > 0.0014:
-            await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
-                                           quantity="0.0014", price=buy_price,
-                                           time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
-                                           new_order_response_type=enums.OrderResponseType.FULL)
+            response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
+            buy_price = truncate(float(response["response"]["askPrice"]), 5)
+            if buy_price - expected_buy_price < 5:
+                await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
+                                               quantity="0.0014", price=str(buy_price),
+                                               time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+                                               new_order_response_type=enums.OrderResponseType.FULL)
+            else:
+                print(f"Price changed too fast, not profitable to buy. "
+                      f"Original price: {expected_buy_price}. New price: {buy_price}.")
+            print(f"Buying .0014 {symbol} for {buy_price} per {symbol}. "
+                  f"{symbol} value of current USDT balance: {btc_value}")
         else:
-            print("Insufficient account balance to perform trade")
+            print(f"Insufficient account balance to perform {symbol} buy. "
+                  f"Total {symbol} value of USDT balance: {btc_value}")
 
     async def sell_market(self, symbol: str) -> None:
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings['BTC'])
-        sell_price = str(truncate(await self.client.get_price_ticker(pair=Pair("BTC", "USDT"))["data"]["b"], 5))
+        response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
+        sell_price = str(truncate(float(response["response"]["bidPrice"]), 5))
         sell_amt = str(truncate(btc_amt, 5))
         print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
         try:
