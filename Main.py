@@ -92,7 +92,7 @@ async def get_market_data(symbol):
             await asyncio.sleep(1)
             print(bids)
             continue
-        print(f"{time.ctime()} {bids}")
+        # print(f"{time.ctime()} {bids}")
         if x % 100 == 0:
             if x > 50000:
                 historical_bids = historical_bids[-50000:]
