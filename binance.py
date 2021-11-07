@@ -20,8 +20,8 @@ def truncate(n: float, decimals=0):
 
 
 class Binance(Exchange):
-    def __init__(self, testnet=True):
-        super().__init__()
+    def __init__(self, investor, testnet=True):
+        super().__init__(investor)
         self.name = "Binance"
         self.holdings = {'BTC': 0, 'USDT': 0}
         self.commission = .00075
@@ -108,10 +108,7 @@ class Binance(Exchange):
             self.best_bid_by_symbol['BTC'] = response['data']['b']
         except KeyError:
             print(f"Out: [{response}]")
-        except IndexError:
-            pass
-        except Exception:
-            print("Uncaught exception in Binance")
+        await self.invest()
 
     async def get_account_trades(self, symbol: str) -> list:
         """Gets all account trades in nicely formatted dictionary

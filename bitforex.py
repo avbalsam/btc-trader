@@ -13,8 +13,8 @@ from exchange import Exchange
 
 
 class Bitforex(Exchange):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, investor):
+        super().__init__(investor)
         api_key = "5c93be0edb56bde9adde22997b87ceb6"
         sec_key = "cd0918f37fa80a73254d7189929d5d09"
 
@@ -36,3 +36,4 @@ class Bitforex(Exchange):
             self.best_ask_by_symbol['BTC'] = response['data']['asks'][0]['price']
         except KeyError:
             print(f"Out: [{response}]")
+        await self.invest()

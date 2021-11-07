@@ -7,8 +7,8 @@ from exchange import Exchange
 
 
 class KuCoin(Exchange):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, investor):
+        super().__init__(investor)
         global loop
 
         api_key = '617bad17b6ab210001dd3593'
@@ -27,3 +27,4 @@ class KuCoin(Exchange):
         if msg['topic'] == '/market/ticker:BTC-USDT':
             self.best_ask_by_symbol['BTC'] = msg['data']['bestAsk']
             self.best_bid_by_symbol['BTC'] = msg['data']['bestBid']
+        await self.invest()

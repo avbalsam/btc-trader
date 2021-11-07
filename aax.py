@@ -13,8 +13,8 @@ from cryptoxlib.version_conversions import async_run
 from exchange import Exchange
 
 class AAX(Exchange):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, investor):
+        super().__init__(investor)
         self.name = "AAX"
         self.api_key = "a0dwBYAi3LcTRT0uPwV8VPsAz9"
         self.sec_key = "5d03a6614652887bb5835261be46a34d"
@@ -35,3 +35,4 @@ class AAX(Exchange):
             self.best_ask_by_symbol['BTC'] = response['asks'][0][0]
         except KeyError:
             print(f"Out: [{response}]")
+        await self.invest()

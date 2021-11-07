@@ -1,5 +1,6 @@
 class Exchange:
-    def __init__(self):
+    def __init__(self, investor):
+        self.investor = investor
         self.best_ask_by_symbol = dict()
         self.best_bid_by_symbol = dict()
 
@@ -14,3 +15,6 @@ class Exchange:
             return float(self.best_bid_by_symbol[symbol])
         else:
             return 0.0
+
+    async def invest(self):
+        await self.investor.invest()

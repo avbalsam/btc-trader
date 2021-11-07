@@ -13,8 +13,8 @@ from exchange import Exchange
 
 
 class Hitbtc(Exchange):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, investor):
+        super().__init__(investor)
         api_key = "uVMVK5NLUM-Ewb-tM3aYEsWK-L2pyrmX"
         sec_key = "ZOKzoTqZkyqvCnCOBBi3t2cD7mDqL7p_"
 
@@ -36,3 +36,4 @@ class Hitbtc(Exchange):
             self.best_bid_by_symbol['BTC'] = response['params']['bid']
         except KeyError:
             print(f"Callback order_book_update: [{response}]")
+        await self.invest()
