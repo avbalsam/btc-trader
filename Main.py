@@ -64,6 +64,7 @@ class Investor:
         self.avg_diff = [e.get_bid(symbol) - self.exchange_list[0].get_bid(symbol) for e in self.exchange_list]
         self.loops_completed = 0
         self.invest_checks_completed = 0
+        self.order_active = False
 
     async def get_market_data(self):
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
@@ -84,16 +85,16 @@ class Investor:
                 continue
             # print(f"{time.ctime()} {bids} {self.loops_completed}")
             if self.loops_completed % 100 == 0:
-                if self.loops_completed > 50000:
-                    self.historical_bids = self.historical_bids[-50000:]
-                    self.diff_lists = self.diff_lists[-50000:]
-                print("Current time: " + time.ctime())
-                print(f"{str(self.loops_completed)} data collection loops completed. "
-                      f"{self.invest_checks_completed} invest checks completed...")
-                print(bids)
-                print(self.avg_diff)
-                print(f"Current holdings. BTC: {self.exchange_list[0].holdings['BTC']}, "
-                      f"USDT: {self.exchange_list[0].holdings['USDT']}")
+                if self.loops_completed > 40000:
+                    self.historical_bids = self.historical_bids[-40000:]
+                    self.diff_lists = self.diff_lists[-40000:]
+                print(f"Current time: {time.ctime()}\n"
+                      f"{self.loops_completed} data collection loops completed. "
+                      f"{self.invest_checks_completed} invest checks completed...\n"
+                      f"Bids: {bids}\n"
+                      f"Avg diff: {self.avg_diff}\n"
+                      f"Current holdings. BTC: {self.exchange_list[0].holdings['BTC']}, "
+                      f"USDT: {self.exchange_list[0].holdings['USDT']}\n\n")
                 if self.loops_completed % 1000 == 0:
                     await self.exchange_list[0].update_account_balances()
                     write_to_csv('bid_data', self.fields, self.historical_bids)
@@ -101,13 +102,16 @@ class Investor:
             for e in range(0, len(self.exchange_list)):
                 self.historical_bids[e].append(self.exchange_list[e].get_bid(self.symbol))
                 self.diff_lists[e].append(self.exchange_list[e].get_bid(self.symbol) - self.exchange_list[0].get_bid(self.symbol))
-                if self.loops_completed <= 50000:
+                if self.loops_completed <= 40000:
                     self.avg_diff[e] = self.avg_diff[e] * ((self.loops_completed - 1) / self.loops_completed) + \
                                        self.diff_lists[e][-1] / self.loops_completed
                 else:
-                    self.avg_diff[e] = np.mean(self.diff_lists[e][-50000:])
+                    self.avg_diff[e] = np.mean(self.diff_lists[e][-40000:])
 
     async def invest(self):
+        if self.order_active:
+            return
+        self.invest_checks_completed += 1
         buy_disc_count = 0
         sell_disc_count = 0
         disc_list = [self.exchange_list[e].get_bid(self.symbol) - self.exchange_list[0].get_bid(self.symbol) -
@@ -118,18 +122,17 @@ class Investor:
             elif d < 0:
                 sell_disc_count += 1
         # print(f"{buy_disc_count} {sell_disc_count} {self.invest_checks_completed}")
-        self.invest_checks_completed += 1
-        if self.loops_completed > 50000:
+        if self.loops_completed > 40000:
             if buy_disc_count >= len(self.exchange_list) - 1 and self.exchange_list[0].holdings['USDT'] > 0:
-                try:
-                    await self.exchange_list[0].buy_market(self.symbol)
-                except Exception as e:
-                    print(f"Error while buying market: {e}")
-        if sell_disc_count >= len(self.exchange_list) - 1 and float(self.exchange_list[0].holdings['BTC']) >= .001:
-            try:
-                await self.exchange_list[0].sell_market(self.symbol)
-            except Exception as e:
-                print(f"Error while selling market: {e}")
+                self.order_active = True
+                await self.exchange_list[0].buy_market(self.symbol)
+                self.order_active = False
+                self.order_active = False
+        if sell_disc_count >= len(self.exchange_list) - 1:
+            self.order_active = True
+            await self.exchange_list[0].sell_market(self.symbol)
+            self.order_active = False
+            self.order_active = False
 
 
 async def start_websockets(exchange, loop):
