@@ -1,15 +1,10 @@
 import asyncio
 import csv
-import threading
 import time
 import numpy as np
 import logging
 
-from cryptoxlib.Pair import Pair
-from cryptoxlib.version_conversions import async_run
-
 from binance import Binance
-from bitforex import Bitforex
 from aax import AAX
 from hitbtc import Hitbtc
 from ku import KuCoin

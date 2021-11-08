@@ -1,13 +1,6 @@
-import logging
-import os
-import uuid
-
 from cryptoxlib.CryptoXLib import CryptoXLib
 from cryptoxlib.Pair import Pair
-from cryptoxlib.clients.hitbtc.HitbtcWebsocket import TickerSubscription, OrderbookSubscription, TradesSubscription, \
-    AccountSubscription, ClientWebsocketHandle, CreateOrderMessage, CancelOrderMessage
-from cryptoxlib.clients.hitbtc import enums
-from cryptoxlib.version_conversions import async_run
+from cryptoxlib.clients.hitbtc.HitbtcWebsocket import TickerSubscription
 
 from exchange import Exchange
 

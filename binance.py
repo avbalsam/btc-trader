@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import os
 from datetime import datetime
 
 from cryptoxlib.CryptoXLib import CryptoXLib
@@ -46,47 +45,55 @@ class Binance(Exchange):
         ])
 
     async def account_update(self, response: dict) -> None:
-        print(f"Callback account_update: [{response}]")
         if response['data']['e'] == 'outboundAccountPosition':
             assets = response['data']['B']
             for asset in assets:
                 symbol = asset['a']
                 quantity = asset['f']
                 self.holdings[symbol] = float(quantity)
+            print(f"Callback account update: {assets}")
 
     async def buy_market(self, symbol: str) -> None:
         """Buys 0.0014 bitcoin at market price"""
-        expected_buy_price = truncate(self.get_ask(symbol),5)
         usdt_amt = float(self.holdings['USDT'])
-        btc_value = round((usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol), 5)
+        btc_value = truncate((usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol), 4)
+        expected_buy_price = truncate(self.get_ask(symbol), 4)
         if btc_value > 0.0014:
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
             # buy_price = truncate(float(response["response"]["askPrice"]), 5)
-            await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
-                                           quantity="0.0014", price=str(expected_buy_price),
-                                           time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
-                                           new_order_response_type=enums.OrderResponseType.FULL)
-            print(f"Buying .0014 {symbol} for {expected_buy_price} per {symbol}. "
-                  f"{symbol} value of current USDT balance: {btc_value}")
+            try:
+                await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
+                                               quantity="0.0014", price=str(expected_buy_price),
+                                               time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
+                                               new_order_response_type=enums.OrderResponseType.FULL)
+                print(f"Buying .0014 {symbol} for {expected_buy_price} per {symbol}. "
+                      f"{symbol} value of current USDT balance: {btc_value}")
+                await asyncio.sleep(.5)
+            except Exception as e:
+                print(f"Error while buying {symbol}: {e}")
         else:
             print(f"Insufficient account balance to perform {symbol} buy. "
                   f"Total {symbol} value of USDT balance: {btc_value}")
 
     async def sell_market(self, symbol: str) -> None:
         """Attempts to sell all bitcoin at market price"""
-        btc_amt = float(self.holdings['BTC'])
+        btc_amt = float(self.holdings[symbol])
+        if btc_amt < 0.001:
+            return
         # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
         # sell_price = str(truncate(float(response["response"]["bidPrice"]), 5))
-        sell_price = str(truncate(self.get_bid(symbol), 5))
+        sell_price = str(truncate(self.get_bid(symbol), 2))
+        print(f"Sell price: {sell_price}")
         sell_amt = str(truncate(btc_amt, 5))
-        print(f"Selling {sell_amt} bitcoins for {sell_price} per bitcoin. Total amount sold: {sell_amt}")
         try:
             await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
                                            quantity=sell_amt, price=sell_price,
                                            time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                            new_order_response_type=enums.OrderResponseType.FULL)
+            print(f"Selling {sell_amt} {symbol} for {sell_price} per {symbol}. Total amount sold: {sell_amt}")
+            await asyncio.sleep(.5)
         except Exception as e:
-            print(f"Out: {e}")
+            print(f"Error while selling {symbol}: {e}")
 
     async def update_account_balances(self) -> None:
         """Updates self.holdings based on balances in client account"""

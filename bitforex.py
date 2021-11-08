@@ -1,13 +1,6 @@
-import logging
-import os
-
-from cryptoxlib.version_conversions import async_run
 from cryptoxlib.CryptoXLib import CryptoXLib
-from cryptoxlib.clients.bitforex import enums
 from cryptoxlib.Pair import Pair
-from cryptoxlib.clients.bitforex.BitforexWebsocket import OrderBookSubscription, TradeSubscription, TickerSubscription, \
-    Ticker24hSubscription
-from cryptoxlib.version_conversions import async_run
+from cryptoxlib.clients.bitforex.BitforexWebsocket import OrderBookSubscription
 
 from exchange import Exchange
 

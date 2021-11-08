@@ -1,4 +1,5 @@
 class Exchange:
+    """Superclass which includes get_bid(), get_ask(), and invest() methods"""
     def __init__(self, investor):
         self.investor = investor
         self.best_ask_by_symbol = dict()

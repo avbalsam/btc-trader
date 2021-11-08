@@ -1,5 +1,3 @@
-import asyncio
-
 from kucoin.client import Client
 from kucoin.asyncio import KucoinSocketManager
 

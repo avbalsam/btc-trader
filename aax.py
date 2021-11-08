@@ -1,14 +1,6 @@
-import asyncio
-import logging
-import os
-
-from binance import Binance
-from bitforex import Bitforex
-
 from cryptoxlib.CryptoXLib import CryptoXLib
 from cryptoxlib.Pair import Pair
-from cryptoxlib.clients.aax.AAXWebsocket import OrderBookSubscription, AccountSubscription
-from cryptoxlib.version_conversions import async_run
+from cryptoxlib.clients.aax.AAXWebsocket import OrderBookSubscription
 
 from exchange import Exchange
 
