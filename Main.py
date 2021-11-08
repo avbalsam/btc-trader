@@ -63,7 +63,6 @@ class Investor:
 
     async def get_market_data(self):
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
-        # print(len(await self.exchange_list[0].get_account_trades('BTC')))
         # print(await self.exchange_list[0].print_trades('BTC'))
         # print(await self.exchange_list[0].get_volume('BTC'))
         # return
