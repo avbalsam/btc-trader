@@ -86,7 +86,7 @@ class Binance(Exchange):
         # sell_price = str(truncate(float(response["response"]["bidPrice"]), 5))
         sell_price = str(truncate(self.get_bid(symbol), 2))
         print(f"Sell price: {sell_price}")
-        sell_amt = str(truncate(btc_amt, 5))
+        sell_amt = str(truncate(btc_amt, 4))
         try:
             response = await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL,
                                                       type=enums.OrderType.LIMIT,
