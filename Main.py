@@ -85,7 +85,7 @@ class Investor:
                 await asyncio.sleep(1)
                 print(bids)
                 continue
-            # print(f"{time.ctime()} {bids} {self.loops_completed}")
+            print(f"{time.ctime()} {bids} {self.loops_completed}")
             if self.loops_completed % 30 == 0:
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
