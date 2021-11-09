@@ -85,8 +85,8 @@ class Investor:
                 await asyncio.sleep(1)
                 print(bids)
                 continue
-            print(f"{time.ctime()} {bids} {self.loops_completed}")
-            if self.loops_completed % 10 == 0:
+            # print(f"{time.ctime()} {bids} {self.loops_completed}")
+            if self.loops_completed % 60 == 0:
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
@@ -97,7 +97,7 @@ class Investor:
                       f"Avg diff: {self.avg_diff}\n"
                       f"Current holdings. BTC: {self.exchange_list[0].holdings['BTC']}, "
                       f"USDT: {self.exchange_list[0].holdings['USDT']}\n")
-                if self.loops_completed % 240 == 0:
+                if self.loops_completed % 480 == 0:
                     await self.exchange_list[0].update_account_balances()
                     write_to_csv('bid_data', self.fields, self.historical_bids)
                     write_to_csv('diffs_data', self.fields, self.diff_lists)
