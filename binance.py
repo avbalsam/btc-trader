@@ -57,7 +57,7 @@ class Binance(Exchange):
         """Buys 0.0014 bitcoin at market price"""
         usdt_amt = float(self.holdings['USDT'])
         btc_value = truncate((usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol), 4)
-        expected_buy_price = truncate(self.get_ask(symbol), 4)
+        expected_buy_price = truncate(self.get_ask(symbol) + 5, 4)
         if btc_value > 0.0014:
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
             # buy_price = truncate(float(response["response"]["askPrice"]), 5)
@@ -109,7 +109,7 @@ class Binance(Exchange):
         await self.client.start_websockets()
 
     async def orderbook_ticker_update(self, response: dict) -> None:
-        # print(f"Callback orderbook_ticker_update: [{response}]")
+        print(f"Callback orderbook_ticker_update: [{response}]")
         try:
             self.best_ask_by_symbol['BTC'] = response['data']['a']
             self.best_bid_by_symbol['BTC'] = response['data']['b']
