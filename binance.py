@@ -103,13 +103,12 @@ class Binance(Exchange):
             symbol = assets[a]['asset']
             quantity = assets[a]['free']
             self.holdings[symbol] = float(quantity)
-        print(self.holdings)
 
     async def start_websockets(self, loop) -> None:
         await self.client.start_websockets()
 
     async def orderbook_ticker_update(self, response: dict) -> None:
-        print(f"Callback orderbook_ticker_update: [{response}]")
+        # print(f"Callback orderbook_ticker_update: [{response}]")
         try:
             self.best_ask_by_symbol['BTC'] = response['data']['a']
             self.best_bid_by_symbol['BTC'] = response['data']['b']
