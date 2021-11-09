@@ -127,13 +127,23 @@ class Investor:
         if self.loops_completed > self.calibration_loops:
             if buy_disc_count >= len(self.exchange_list) - 1 and self.exchange_list[0].holdings['USDT'] > 0:
                 self.order_active = True
-                await self.exchange_list[0].buy_market(self.symbol)
-                self.order_active = False
-                self.order_active = False
+                order_id = await self.exchange_list[0].buy_market(self.symbol)
+                await asyncio.sleep(.1)
+                if order_id is not None:
+                    try:
+                        await self.exchange_list[0].cancel_order(self.symbol, order_id)
+                    except Exception as e:
+                        print(f"Error while cancelling buy order: {e}")
+                    self.order_active = False
         if sell_disc_count >= len(self.exchange_list) - 1:
             self.order_active = True
-            await self.exchange_list[0].sell_market(self.symbol)
-            self.order_active = False
+            order_id = await self.exchange_list[0].sell_market(self.symbol)
+            await asyncio.sleep(3)
+            if order_id is not None:
+                try:
+                    await self.exchange_list[0].cancel_order(self.symbol, order_id)
+                except Exception as e:
+                    print(f"Error while cancelling sell order: {e}")
             self.order_active = False
 
 

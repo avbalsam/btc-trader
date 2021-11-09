@@ -53,7 +53,7 @@ class Binance(Exchange):
                 self.holdings[symbol] = float(quantity)
             print(f"Callback account update: {assets}")
 
-    async def buy_market(self, symbol: str) -> None:
+    async def buy_market(self, symbol: str):
         """Buys 0.0014 bitcoin at market price"""
         usdt_amt = float(self.holdings['USDT'])
         btc_value = usdt_amt - usdt_amt * self.commission / self.get_ask(symbol)
@@ -62,20 +62,22 @@ class Binance(Exchange):
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
             # buy_price = truncate(float(response["response"]["askPrice"]), 5)
             try:
-                await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
-                                               quantity="0.0013", price=str(expected_buy_price),
-                                               time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
-                                               new_order_response_type=enums.OrderResponseType.FULL)
+                response = await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY,
+                                                          type=enums.OrderType.LIMIT,
+                                                          quantity="0.0013", price=str(expected_buy_price),
+                                                          time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
+                                                          new_order_response_type=enums.OrderResponseType.FULL)
+                order_id = response['response']['orderId']
                 print(f"Buying .0014 {symbol} for {expected_buy_price} per {symbol}. "
                       f"{symbol} value of current USDT balance: {btc_value}")
-                await asyncio.sleep(.5)
+                return order_id
             except Exception as e:
                 print(f"Error while buying {symbol}: {e}")
         else:
             print(f"Insufficient account balance to perform {symbol} buy. "
                   f"Total {symbol} value of USDT balance: {btc_value}")
 
-    async def sell_market(self, symbol: str) -> None:
+    async def sell_market(self, symbol: str):
         """Attempts to sell all bitcoin at market price"""
         btc_amt = float(self.holdings[symbol])
         if btc_amt < 0.001:
@@ -86,14 +88,19 @@ class Binance(Exchange):
         print(f"Sell price: {sell_price}")
         sell_amt = str(truncate(btc_amt, 5))
         try:
-            await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL, type=enums.OrderType.LIMIT,
-                                           quantity=sell_amt, price=sell_price,
-                                           time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
-                                           new_order_response_type=enums.OrderResponseType.FULL)
+            response = await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL,
+                                                      type=enums.OrderType.LIMIT,
+                                                      quantity=sell_amt, price=sell_price,
+                                                      time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
+                                                      new_order_response_type=enums.OrderResponseType.FULL)
+            order_id = response['response']['orderId']
             print(f"Selling {sell_amt} {symbol} for {sell_price} per {symbol}. Total amount sold: {sell_amt}")
-            await asyncio.sleep(.5)
+            return order_id
         except Exception as e:
             print(f"Error while selling {symbol}: {e}")
+
+    async def cancel_order(self, symbol: str, order_id: int) -> None:
+        await self.client.cancel_order(pair=Pair(symbol, "USDT"), order_id=str(order_id))
 
     async def update_account_balances(self) -> None:
         """Updates self.holdings based on balances in client account"""
@@ -127,7 +134,8 @@ class Binance(Exchange):
         from_id = 0
         all_trades = list()
         while True:
-            trades_from_id = await self.client.get_account_trades(pair=Pair(symbol, 'USDT'), limit=1000, from_id=from_id)
+            trades_from_id = await self.client.get_account_trades(pair=Pair(symbol, 'USDT'), limit=1000,
+                                                                  from_id=from_id)
             trades_from_id = trades_from_id['response']
             trades_formatted_from_id = list()
             for trade in trades_from_id:
