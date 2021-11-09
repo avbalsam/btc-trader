@@ -56,14 +56,14 @@ class Binance(Exchange):
     async def buy_market(self, symbol: str) -> None:
         """Buys 0.0014 bitcoin at market price"""
         usdt_amt = float(self.holdings['USDT'])
-        btc_value = truncate((usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol), 4)
+        btc_value = usdt_amt - usdt_amt * self.commission / self.get_ask(symbol)
         expected_buy_price = truncate(self.get_ask(symbol) + 5, 4)
-        if btc_value > 0.0014:
+        if btc_value >= 0.0014:
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
             # buy_price = truncate(float(response["response"]["askPrice"]), 5)
             try:
                 await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY, type=enums.OrderType.LIMIT,
-                                               quantity="0.0014", price=str(expected_buy_price),
+                                               quantity="0.0013", price=str(expected_buy_price),
                                                time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                                new_order_response_type=enums.OrderResponseType.FULL)
                 print(f"Buying .0014 {symbol} for {expected_buy_price} per {symbol}. "
