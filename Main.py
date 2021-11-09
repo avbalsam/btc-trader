@@ -86,7 +86,7 @@ class Investor:
                 print(bids)
                 continue
             # print(f"{time.ctime()} {bids} {self.loops_completed}")
-            if self.loops_completed % 60 == 0:
+            if self.loops_completed % 30 == 0:
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
