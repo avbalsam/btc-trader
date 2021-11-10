@@ -25,8 +25,11 @@ class Hitbtc(Exchange):
     async def order_book_update(self, response: dict) -> None:
         # print(f"Callback order_book_update: [{response}]")
         try:
-            self.best_ask_by_symbol['BTC'] = response['params']['ask']
-            self.best_bid_by_symbol['BTC'] = response['params']['bid']
+            symbol = response['params']['symbol'].replace("USD", "", 1)
+            if symbol in self.best_ask_by_symbol and self.best_ask_by_symbol[symbol] == response['params']['ask']:
+                return
+            self.best_ask_by_symbol[symbol] = response['params']['ask']
+            self.best_bid_by_symbol[symbol] = response['params']['bid']
+            await self.invest()
         except KeyError:
-            print(f"Callback order_book_update: [{response}]")
-        await self.invest()
+            print(f"HitBtc out: [{response}]")

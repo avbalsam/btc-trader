@@ -50,24 +50,30 @@ def write_to_csv(filename, fields, data):
 
 
 class Investor:
-    def __init__(self, symbol: str, calibration_time: int, timestep: float):
+    def __init__(self, symbol: str, calibration_time: int, timestep: float, verbose_logging=False, testnet=False):
         """Initializes an instance of Investor class
 
         Args:
             symbol (str): String representing symbol this Investor will trade
             calibration_time (int): Amount of time Investor should calculate market data before investing, in seconds
             timestep (float): Amount of time in between market data calculations, in seconds.
+            verbose_logging (bool): Determines whether the investor will log verbose information.
+            testnet (bool): Determines whether to use real money or not.
         """
-        self.calibration_loops = round(calibration_time / timestep)
-        self.exchange_list = [Binance(self, testnet=False), AAX(self), Hitbtc(self), KuCoin(self)]
         self.symbol = symbol
-        self.historical_bids = [list() for i in range(0, len(self.exchange_list))]
-        self.fields = [exchange.name for exchange in self.exchange_list]
-        self.diff_lists = [list() for i in range(0, len(self.exchange_list))]
+        self.calibration_loops = round(calibration_time / timestep)
+        self.verbose_logging = verbose_logging
+        self.exchange_list = [Binance(self, testnet=testnet), AAX(self), Hitbtc(self), KuCoin(self)]
+
+        self.sell_order_active = False
+        self.buy_order_active = False
+        self.active_sell_orders = list()
+        self.historical_bids = [[e.get_bid(symbol)] for e in self.exchange_list]
+        self.fields = [e.name for e in self.exchange_list]
+        self.diff_lists = [[e.get_bid(symbol) - self.exchange_list[0].get_bid(symbol)] for e in self.exchange_list]
         self.avg_diff = [e.get_bid(symbol) - self.exchange_list[0].get_bid(symbol) for e in self.exchange_list]
         self.loops_completed = 0
         self.invest_checks_completed = 0
-        self.order_active = False
 
     async def get_market_data(self):
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
@@ -85,8 +91,9 @@ class Investor:
                 await asyncio.sleep(1)
                 print(bids)
                 continue
-            print(f"{time.ctime()} {bids} {self.loops_completed}")
-            if self.loops_completed % 30 == 0:
+            if self.verbose_logging:
+                print(f"{time.ctime()} {bids} {self.loops_completed}")
+            if self.loops_completed % 60 == 0 or self.verbose_logging and self.loops_completed % 30 == 0:
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
@@ -111,7 +118,7 @@ class Investor:
                     self.avg_diff[e] = np.mean(self.diff_lists[e][-self.calibration_loops:])
 
     async def invest(self):
-        if self.order_active:
+        if self.buy_order_active or self.sell_order_active:
             return
         self.invest_checks_completed += 1
         buy_disc_count = 0
@@ -123,28 +130,40 @@ class Investor:
                 buy_disc_count += 1
             elif d < 0:
                 sell_disc_count += 1
-        # print(f"{[round(d, 2) for d in disc_list]} {self.invest_checks_completed}")
+        if self.verbose_logging:
+            print(f"{[round(d, 2) for d in disc_list]} {self.invest_checks_completed}")
         if self.loops_completed > self.calibration_loops:
-            if buy_disc_count >= len(self.exchange_list) - 1 and self.exchange_list[0].holdings['USDT'] > 0:
-                self.order_active = True
+            if buy_disc_count >= len(self.exchange_list) - 1 and self.exchange_list[0].holdings['USDT'] > 0.001:
                 order_id = await self.exchange_list[0].buy_market(self.symbol)
-                await asyncio.sleep(.1)
                 if order_id is not None:
+                    self.latest_buy_order = order_id
+                    self.buy_order_active = True
+                await asyncio.sleep(.5)
+                if self.buy_order_active:
                     try:
-                        await self.exchange_list[0].cancel_order(self.symbol, order_id)
+                        await self.exchange_list[0].cancel_order(self.symbol, self.latest_buy_order)
                     except Exception as e:
-                        print(f"Error while cancelling buy order: {e}")
-                    self.order_active = False
+                        print(f"Unable to cancel buy order: {e}")
+                    self.buy_order_active = False
         if sell_disc_count >= len(self.exchange_list) - 1:
-            self.order_active = True
             order_id = await self.exchange_list[0].sell_market(self.symbol)
-            await asyncio.sleep(3)
             if order_id is not None:
+                self.active_sell_orders.append(order_id)
+
+    async def cancel_orders(self):
+        orders_to_cancel = list()
+        while True:
+            if self.verbose_logging:
+                print(f"Active orders: {self.active_sell_orders}")
+            if self.active_sell_orders != orders_to_cancel:
+                orders_to_cancel = self.active_sell_orders
+            await asyncio.sleep(10)
+            for order in orders_to_cancel:
                 try:
-                    await self.exchange_list[0].cancel_order(self.symbol, order_id)
+                    await self.exchange_list[0].cancel_order(self.symbol, int(order))
+                    print(f"{self.symbol} order cancelled. Order ID: {order}")
                 except Exception as e:
-                    print(f"Error while cancelling sell order: {e}")
-            self.order_active = False
+                    print(f"Unable to cancel sell order: {e}")
 
 
 async def start_websockets(exchange, loop):
@@ -156,8 +175,9 @@ async def start_websockets(exchange, loop):
 
 
 if __name__ == "__main__":
-    investor = Investor("BTC", 5000, 1)
+    investor = Investor("BTC", calibration_time=5000, timestep=1, verbose_logging=False, testnet=False)
     loop = asyncio.get_event_loop()
-    results = asyncio.gather(*[start_websockets(e, loop) for e in investor.exchange_list], investor.get_market_data())
+    results = asyncio.gather(*[start_websockets(e, loop) for e in investor.exchange_list], investor.get_market_data(),
+                             investor.cancel_orders())
     loop.run_until_complete(results)
     loop.close()

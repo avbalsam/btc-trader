@@ -23,8 +23,11 @@ class AAX(Exchange):
     async def order_book_update(self, response: dict) -> None:
         # print(f"Callback order_book_update: [{response}]")
         try:
-            self.best_bid_by_symbol['BTC'] = response['bids'][0][0]
-            self.best_ask_by_symbol['BTC'] = response['asks'][0][0]
+            symbol = response['e'].replace("USDT@book_20", "", 1)
+            if symbol in self.best_ask_by_symbol and self.best_ask_by_symbol[symbol] == response['asks'][0][0]:
+                return
+            self.best_bid_by_symbol[symbol] = response['bids'][0][0]
+            self.best_ask_by_symbol[symbol] = response['asks'][0][0]
+            await self.invest()
         except KeyError:
             print(f"Out: [{response}]")
-        await self.invest()

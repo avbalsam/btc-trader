@@ -22,7 +22,10 @@ class KuCoin(Exchange):
 
     async def order_book_update(self, msg):
         # print(f"Callback order book update: {msg}")
-        if msg['topic'] == '/market/ticker:BTC-USDT':
-            self.best_ask_by_symbol['BTC'] = msg['data']['bestAsk']
-            self.best_bid_by_symbol['BTC'] = msg['data']['bestBid']
-        await self.invest()
+        if '/market/ticker:' in msg['topic']:
+            symbol = msg['topic'].replace("/market/ticker:", "", 1).replace("-USDT", "", 1)
+            if symbol in self.best_ask_by_symbol and self.best_ask_by_symbol[symbol] == msg['data']['bestAsk']:
+                return
+            self.best_ask_by_symbol[symbol] = msg['data']['bestAsk']
+            self.best_bid_by_symbol[symbol] = msg['data']['bestBid']
+            await self.invest()

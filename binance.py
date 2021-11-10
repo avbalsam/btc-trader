@@ -37,7 +37,7 @@ class Binance(Exchange):
             self.client = CryptoXLib.create_binance_client(self.api_key, self.sec_key)
 
         self.client.compose_subscriptions([
-            OrderBookSymbolTickerSubscription(pair=Pair("BTC", "USDT"), callbacks=[self.orderbook_ticker_update])
+            OrderBookSymbolTickerSubscription(pair=Pair("BTC", "USDT"), callbacks=[self.orderbook_ticker_update]),
         ])
 
         self.client.compose_subscriptions([
@@ -117,11 +117,14 @@ class Binance(Exchange):
     async def orderbook_ticker_update(self, response: dict) -> None:
         # print(f"Callback orderbook_ticker_update: [{response}]")
         try:
-            self.best_ask_by_symbol['BTC'] = response['data']['a']
-            self.best_bid_by_symbol['BTC'] = response['data']['b']
+            symbol = response['data']['s'].replace("USDT", "", 1)
+            if symbol in self.best_ask_by_symbol and self.best_ask_by_symbol[symbol] == response['data']['a']:
+                return
+            self.best_ask_by_symbol[symbol] = response['data']['a']
+            self.best_bid_by_symbol[symbol] = response['data']['b']
+            await self.invest()
         except KeyError:
             print(f"Out: [{response}]")
-        await self.invest()
 
     async def get_account_trades(self, symbol: str) -> list:
         """Gets all account trades in nicely formatted dictionary
