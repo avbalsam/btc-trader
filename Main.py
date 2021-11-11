@@ -125,7 +125,7 @@ class Investor:
         disc_list = [self.exchange_list[e].get_bid(self.symbol) - self.exchange_list[0].get_bid(self.symbol) -
                      self.avg_diff[e] for e in range(0, len(self.exchange_list))]
         for d in disc_list:
-            if d > 65:
+            if d > 80:
                 buy_disc_count += 1
             elif d < 0:
                 sell_disc_count += 1
