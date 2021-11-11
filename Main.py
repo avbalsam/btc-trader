@@ -79,7 +79,6 @@ class Investor:
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
         # print(await self.exchange_list[0].print_trades('BTC'))
         # print(await self.exchange_list[0].get_volume('BTC'))
-        # return
         await self.exchange_list[0].update_account_balances()
         self.loops_completed = 0
         while True:
