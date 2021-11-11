@@ -14,7 +14,7 @@ class AAX(Exchange):
 
         self.client = CryptoXLib.create_aax_client(self.api_key, self.sec_key)
         self.client.compose_subscriptions([
-            OrderBookSubscription(pair=Pair('BTC', 'USDT'), depth=20, callbacks=[self.order_book_update]),
+            OrderBookSubscription(pair=Pair(self.investor.get_symbol(), 'USDT'), depth=20, callbacks=[self.order_book_update]),
         ])
 
     async def start_websockets(self, loop) -> None:

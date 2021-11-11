@@ -16,7 +16,7 @@ class Hitbtc(Exchange):
 
         # Bundle several subscriptions into a single websocket
         self.client.compose_subscriptions([
-            TickerSubscription(pair=Pair("BTC", "USD"), callbacks=[self.order_book_update])
+            TickerSubscription(pair=Pair(self.investor.get_symbol(), "USD"), callbacks=[self.order_book_update])
         ])
 
     async def start_websockets(self, loop) -> None:

@@ -37,7 +37,8 @@ class Binance(Exchange):
             self.client = CryptoXLib.create_binance_client(self.api_key, self.sec_key)
 
         self.client.compose_subscriptions([
-            OrderBookSymbolTickerSubscription(pair=Pair("BTC", "USDT"), callbacks=[self.orderbook_ticker_update]),
+            OrderBookSymbolTickerSubscription(pair=Pair(self.investor.get_symbol(), "USDT"),
+                                              callbacks=[self.orderbook_ticker_update]),
         ])
 
         self.client.compose_subscriptions([
