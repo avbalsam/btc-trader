@@ -118,7 +118,7 @@ class Investor:
                     self.avg_diff[e] = np.mean(self.diff_lists[e][-self.calibration_loops:])
 
     async def invest(self):
-        if self.buy_order_active or self.sell_order_active:
+        if self.buy_order_active or len(self.active_sell_orders) > 0:
             return
         self.invest_checks_completed += 1
         buy_disc_count = 0
@@ -164,6 +164,7 @@ class Investor:
                     print(f"{self.symbol} order cancelled. Order ID: {order}")
                 except Exception as e:
                     print(f"Unable to cancel sell order: {e}")
+                self.active_sell_orders.remove(order)
 
 
 async def start_websockets(exchange, loop):
