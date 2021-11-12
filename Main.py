@@ -178,7 +178,7 @@ async def start_websockets(exchange, loop):
 
 
 if __name__ == "__main__":
-    investor = Investor("BTC", calibration_time=5000, timestep=1, buy_disc=0.0013, verbose_logging=True, testnet=False)
+    investor = Investor("BTC", calibration_time=5000, timestep=1, buy_disc=0.0020, verbose_logging=True, testnet=False)
     loop = asyncio.get_event_loop()
     results = asyncio.gather(*[start_websockets(e, loop) for e in investor.exchange_list], investor.get_market_data(),
                              investor.cancel_orders())
