@@ -146,7 +146,7 @@ class Investor:
                         await self.exchange_list[0].cancel_order(self.symbol, self.latest_buy_order)
                     except Exception as e:
                         print(f"Unable to cancel buy order: {e}")
-                    self.buy_order_active = False
+                self.buy_order_active = False
         if sell_disc_count >= len(self.exchange_list) - 2:
             order_id = await self.exchange_list[0].sell_market(self.symbol)
             if order_id is not None:
