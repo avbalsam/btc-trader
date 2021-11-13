@@ -1,8 +1,10 @@
 import asyncio
 import csv
+import shutil
 import time
 import numpy as np
 import logging
+import os
 
 from binance import Binance
 from aax import AAX
@@ -15,11 +17,11 @@ def read_csv(filename):
     Reads .csv file to list.
 
     Args:
-        filename (str): Do not include .csv extension
+        filename (str): Include .csv extension
     Returns:
         data (list): Nested list, with headers in first row
     """
-    with open("data/" + filename + ".csv", "r") as f:
+    with open(f"./outputs/{filename}", "r") as f:
         reader = csv.reader(f)
         data = list(reader)
         data = [x for x in data if x != []]
@@ -33,13 +35,21 @@ def write_to_csv(filename, fields, data):
     Args:
         filename (str): Do not include .csv extension.
         fields (list): First row of table.
-        data (list): Nested list. Each element represents one row.
+        data (list): Nested list. Each element represents one column of csv file (in this case, one exchange).
     """
+    if not (os.path.exists("./outputs")):
+        os.mkdir("./outputs")
+    data = np.array(data).T.tolist()
     try:
-        with open(f"{filename}.csv", "w") as f:
-            write = csv.writer(f)
-            write.writerow(fields)
-            write.writerows(data)
+        if os.path.exists(f"./outputs/{filename}.csv"):
+            with open(f"./outputs/{filename}.csv", "a", newline='') as f:
+                write = csv.writer(f)
+                write.writerows(data)
+        else:
+            with open(f"./outputs/{filename}.csv", "w", newline='') as f:
+                write = csv.writer(f)
+                write.writerow(fields)
+                write.writerows(data)
     except PermissionError:
         print("Unable to gain access to file. Please close any programs which are using " + filename + ".csv...")
 
@@ -98,7 +108,7 @@ class Investor:
                 continue
             if self.verbose_logging:
                 print(f"{self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
-            if self.loops_completed % 60 == 0 or self.verbose_logging and self.loops_completed % 30 == 0:
+            if self.loops_completed % 30 == 0:
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
@@ -109,10 +119,14 @@ class Investor:
                       f"Avg diff: {self.avg_diff}\n"
                       f"Current holdings. {self.symbol}: {self.exchange_list[0].holdings[self.symbol]}, "
                       f"USDT: {self.exchange_list[0].holdings['USDT']}\n")
+                write_to_csv(f'bid_data_{self.symbol}', self.fields, [bids[-30:] for bids in self.historical_bids])
+                write_to_csv(f'diffs_data_{self.symbol}', self.fields, [diffs[-30:] for diffs in self.diff_lists])
                 if self.loops_completed % 480 == 0:
                     await self.exchange_list[0].update_account_balances()
-                    write_to_csv(f'bid_data_{self.symbol}', self.fields, self.historical_bids)
-                    write_to_csv(f'diffs_data_{self.symbol}', self.fields, self.diff_lists)
+                    if self.loops_completed % self.calibration_loops == 0:
+                        self.historical_bids = self.historical_bids[-self.calibration_loops:]
+                        self.diff_lists = self.diff_lists[-self.calibration_loops:]
+
             for e in range(0, len(self.exchange_list)):
                 self.historical_bids[e].append(self.exchange_list[e].get_bid(self.symbol))
                 self.diff_lists[e].append(self.exchange_list[e].get_bid(self.symbol) - self.exchange_list[0].get_bid(self.symbol))
@@ -181,13 +195,17 @@ async def start_websockets(exchange, loop):
 
 
 if __name__ == "__main__":
-    symbols_to_trade = ["BTC", "ETH", "BCH"]
+    try:
+        shutil.rmtree("./outputs/")
+    except FileNotFoundError:
+        pass
+    symbols_to_trade = ["BTC", "ETH"]
     investors = list()
     for symbol in symbols_to_trade:
         investors.append(Investor(symbol=symbol,
-                                  calibration_time=5000,
-                                  timestep=1, buy_disc=0.0013,
-                                  verbose_logging=False, testnet=False))
+                                  calibration_time=10000,
+                                  timestep=0.5, buy_disc=0.0013,
+                                  verbose_logging=True, testnet=False))
     loop = asyncio.get_event_loop()
     coros = list()
     for investor in investors:

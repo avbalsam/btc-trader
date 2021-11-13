@@ -105,7 +105,14 @@ class Binance(Exchange):
 
     async def update_account_balances(self) -> None:
         """Updates self.holdings based on balances in client account"""
-        account = await self.client.get_account(5000)
+        tries = 0
+        while True:
+            try:
+                account = await self.client.get_account(5000)
+                break
+            except Exception as e:
+                tries += 1
+                print(f"Unable to get account data. {e}. Trying again...\nTotal tries so far: {tries}")
         assets = account['response']['balances']
         for a in range(0, len(assets)):
             symbol = assets[a]['asset']
