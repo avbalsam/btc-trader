@@ -1,2 +1,2 @@
-web: python Main.py
+web: python flaskapp.py
 worker: python Main.py

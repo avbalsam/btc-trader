@@ -196,13 +196,7 @@ async def start_websockets(exchange, loop):
             print(f"{exchange.name} errored out: {e}. Restarting websocket...")
 
 
-def run_app():
-    app.run(host='0.0.0.0', port=5000)
-
-
 if __name__ == "__main__":
-    t = threading.Thread(target=run_app)
-    t.start()
     try:
         shutil.rmtree("./outputs/")
     except FileNotFoundError:

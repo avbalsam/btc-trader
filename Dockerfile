@@ -28,6 +28,10 @@ COPY app.py .
 
 RUN true
 
+COPY flaskapp.py .
+
+RUN true
+
 COPY requirements.txt .
 
 RUN true
