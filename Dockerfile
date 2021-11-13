@@ -8,15 +8,7 @@ COPY aax.py .
 
 RUN true
 
-COPY bitforex.py .
-
-RUN true
-
 COPY binance.py .
-
-RUN true
-
-COPY bitforex.py .
 
 RUN true
 
@@ -29,6 +21,10 @@ COPY ku.py .
 RUN true
 
 COPY exchange.py .
+
+RUN true
+
+COPY app.py
 
 RUN true
 
