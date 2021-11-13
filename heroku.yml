@@ -1,3 +1,9 @@
 build:
   docker:
     web: Dockerfile
+    worker: Dockerfile
+run:
+  web:
+    command:
+      - gunicorn flaskapp:app
+      image: web

@@ -87,4 +87,4 @@ def get_data_csv(filename):
         headers={"Content-disposition": f"attachment; filename={filename}"})
 
 
-app.run(debug=True)
+app.run(host='0.0.0.0', port=5000)
