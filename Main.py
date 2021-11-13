@@ -139,11 +139,12 @@ class Investor:
                 order_id = await self.exchange_list[0].buy_market(self.symbol)
                 if order_id is not None:
                     self.latest_buy_order = order_id
+                    self.active_orders.append(str(order_id))
                     self.buy_order_active = True
                 await asyncio.sleep(.2)
                 if self.buy_order_active:
                     try:
-                        await self.exchange_list[0].cancel_order(self.symbol, self.latest_buy_order)
+                        await self.exchange_list[0].cancel_order(self.symbol, str(self.latest_buy_order))
                     except Exception as e:
                         print(f"Unable to cancel buy order: {e}")
                 self.buy_order_active = False
