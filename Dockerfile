@@ -40,6 +40,4 @@ RUN pip install -r requirements.txt
 
 EXPOSE 5000
 
-CMD gunicorn main:app
-
 CMD ["python", "./Main.py"]
