@@ -24,7 +24,7 @@ COPY exchange.py .
 
 RUN true
 
-COPY app.py
+COPY app.py .
 
 RUN true
 
