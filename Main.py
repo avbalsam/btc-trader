@@ -10,6 +10,7 @@ from binance import Binance
 from aax import AAX
 from hitbtc import Hitbtc
 from ku import KuCoin
+from app import app
 
 
 def read_csv(filename):
@@ -195,6 +196,7 @@ async def start_websockets(exchange, loop):
 
 
 if __name__ == "__main__":
+    app.run()
     try:
         shutil.rmtree("./outputs/")
     except FileNotFoundError:
