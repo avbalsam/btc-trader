@@ -39,16 +39,16 @@ def write_to_csv(filename, fields, data):
         fields (list): First row of table.
         data (list): Nested list. Each element represents one column of csv file (in this case, one exchange).
     """
-    if not (os.path.exists("./outputs")):
-        os.mkdir("./outputs")
+    if not (os.path.exists("./web/outputs")):
+        os.mkdir("./web/outputs")
     data = np.array(data).T.tolist()
     try:
-        if os.path.exists(f"./outputs/{filename}.csv"):
-            with open(f"./outputs/{filename}.csv", "a", newline='') as f:
+        if os.path.exists(f"./web/outputs/{filename}.csv"):
+            with open(f"./web/outputs/{filename}.csv", "a", newline='') as f:
                 write = csv.writer(f)
                 write.writerows(data)
         else:
-            with open(f"./outputs/{filename}.csv", "w", newline='') as f:
+            with open(f"./web/outputs/{filename}.csv", "w", newline='') as f:
                 write = csv.writer(f)
                 write.writerow(fields)
                 write.writerows(data)
@@ -198,10 +198,10 @@ async def start_websockets(exchange, loop):
 
 if __name__ == "__main__":
     try:
-        shutil.rmtree("./outputs/")
+        shutil.rmtree("./web/outputs/")
     except FileNotFoundError:
         pass
-    os.mkdir("./outputs")
+    os.mkdir("./web/outputs")
     symbols_to_trade = ["BTC", "ETH"]
     investors = list()
     for symbol in symbols_to_trade:

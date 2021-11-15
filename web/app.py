@@ -64,6 +64,8 @@ def plot_png(filename):
 @app.route("/")
 def data():
     body = str()
+    if not(os.path.exists("./outputs")):
+        os.mkdir("./outputs")
     for filename in os.listdir("./outputs"):
         body += f"<a href='/get_data_csv/{filename}'>{filename.replace('_', ' ')}</a><br>" \
                 f"<a href='/make-plot/{filename}'>{filename.replace('_', ' ')} -- Plot data</a><br><br>"
