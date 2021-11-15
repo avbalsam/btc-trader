@@ -6,6 +6,6 @@ WORKDIR $APP_HOME
 
 COPY . .
 
-RUN pip install -r requirements.txt
+RUN pip install -r /app/requirements.txt
 
 ENTRYPOINT ["python app.py"]
