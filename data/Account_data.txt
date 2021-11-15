@@ -1,1 +1,0 @@
-Callback account_update: [{'stream': 'FdOq9mFfLddY56WkZreuwAxiOucUTyRHAktE6Gj8n9P1txiHEuR6HOG7bppH', 'data': {'e': 'outboundAccountPosition', 'E': 1634842896468, 'u': 1634842896468, 'B': [{'a': 'BTC', 'f': '0.00006800', 'l': '0.00000000'}, {'a': 'USDT', 'f': '37637.29838241', 'l': '0.00000000'}]}}]
