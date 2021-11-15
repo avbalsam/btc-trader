@@ -28,4 +28,4 @@ class KuCoin(Exchange):
                 return
             self.best_ask_by_symbol[symbol] = msg['data']['bestAsk']
             self.best_bid_by_symbol[symbol] = msg['data']['bestBid']
-            await self.invest()
+            # await self.invest()

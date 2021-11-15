@@ -30,6 +30,6 @@ class Hitbtc(Exchange):
                 return
             self.best_ask_by_symbol[symbol] = response['params']['ask']
             self.best_bid_by_symbol[symbol] = response['params']['bid']
-            await self.invest()
+            # await self.invest()
         except KeyError:
             print(f"HitBtc out: [{response}]")
