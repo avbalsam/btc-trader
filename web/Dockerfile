@@ -1,15 +1,33 @@
 FROM python:3.8
 
-ENV APP_HOME /web
-
-WORKDIR $APP_HOME
-
-COPY app.py .
+COPY ../app.py .
 
 RUN true
 
-COPY requirements.txt .
+COPY ../aax.py .
+
+RUN true
+
+COPY ../binance.py .
+
+RUN true
+
+COPY ../hitbtc.py .
+
+RUN true
+
+COPY ../ku.py .
+
+RUN true
+
+COPY ../exchange.py .
+
+RUN true
+
+COPY ../requirements.txt .
+
+RUN true
 
 RUN pip install -r requirements.txt
 
-ENTRYPOINT ["python app.py"]
+CMD ["python", "./app.py"]
