@@ -24,7 +24,9 @@ COPY exchange.py .
 
 RUN true
 
-COPY ./web .
+COPY . .
+
+RUN true
 
 COPY requirements.txt .
 
