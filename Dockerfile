@@ -24,22 +24,10 @@ COPY exchange.py .
 
 RUN true
 
-COPY app.py .
-
-RUN true
-
-COPY flaskapp.py .
-
-RUN true
-
 COPY requirements.txt .
 
 RUN true
 
 RUN pip install -r requirements.txt
 
-EXPOSE 5000
-
 CMD ["python", "./Main.py"]
-
-CMD ["python", "./flaskapp.py"]
