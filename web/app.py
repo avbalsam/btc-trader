@@ -59,7 +59,9 @@ def plot_png(filename):
 
 @app.route("/")
 def data():
-    body = "<p>Data</p><br>"
+    body = f"<p>Current account balances. USDT: {investors['USDT'].exchange_list[0].holdings['USDT']}, " \
+           f"BTC: {investors['BTC'].exchange_list[0].holdings['BTC']}, " \
+           f"ETH: {investors['ETH'].exchange_list[0].holdings['ETH']}</p><br>"
     for symbol in symbols_to_trade:
         body += f"<p>Current exchange discrepancies: {investors[symbol].get_current_disc()}</p><br>"
     for filename in os.listdir("./outputs/"):
@@ -174,6 +176,7 @@ class Investor:
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
         # print(await self.exchange_list[0].print_trades('BTC'))
         # print(await self.exchange_list[0].get_volume('BTC'))
+        await self.exchange_list[0].update_account_balances()
         self.loops_completed = 0
         while True:
             self.loops_completed += 1
@@ -187,6 +190,7 @@ class Investor:
             if self.verbose_logging:
                 print(f"App: {self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
             if self.loops_completed % 30 == 0:
+                await self.exchange_list[0].update_account_balances()
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
