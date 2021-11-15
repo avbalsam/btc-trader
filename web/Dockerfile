@@ -4,11 +4,11 @@ ENV APP_HOME /app
 
 WORKDIR $APP_HOME
 
-COPY app.py .
+COPY ./app/app.py .
 
 RUN true
 
-COPY requirements.txt .
+COPY ./app/requirements.txt .
 
 RUN pip install -r requirements.txt
 
