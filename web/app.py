@@ -69,8 +69,9 @@ def data():
             body += f"<a href='/get_data_csv/{filename}'>{filename.replace('_', ' ')}</a><br>" \
                     f"<a href='/make-plot/{filename}'>{filename.replace('_', ' ')} -- Plot data</a><br><br>"
     body += "<br><br>"
-    for filename in os.listdir("./outputs"):
-        body += f"<img src='/make-plot/{filename}'>"
+    for filename in os.listdir():
+        if ".csv" in filename:
+            body += f"<img src='/make-plot/{filename}'>"
     return f'''
         <html><body>
         {body}
