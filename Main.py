@@ -11,7 +11,6 @@ from binance import Binance
 from aax import AAX
 from hitbtc import Hitbtc
 from ku import KuCoin
-from app import app
 
 
 def read_csv(filename):
