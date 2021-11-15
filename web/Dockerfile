@@ -1,30 +1,30 @@
 FROM python:3.8
 
-COPY ../app.py .
+COPY app.py .
 
 RUN true
 
-COPY ../aax.py .
+COPY aax.py .
 
 RUN true
 
-COPY ../binance.py .
+COPY binance.py .
 
 RUN true
 
-COPY ../hitbtc.py .
+COPY hitbtc.py .
 
 RUN true
 
-COPY ../ku.py .
+COPY ku.py .
 
 RUN true
 
-COPY ../exchange.py .
+COPY exchange.py .
 
 RUN true
 
-COPY ../requirements.txt .
+COPY requirements.txt .
 
 RUN true
 
