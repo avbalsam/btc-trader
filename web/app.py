@@ -25,7 +25,7 @@ def read_csv(filename):
     Returns:
         data (list): Nested list, with headers in first row
     """
-    with open(f"./outputs/{filename}", "r") as f:
+    with open(f"{filename}", "r") as f:
         reader = csv.reader(f)
         data = list(reader)
         data = [x for x in data if x != []]
@@ -63,12 +63,11 @@ def plot_png(filename):
 
 @app.route("/")
 def data():
-    body = str()
-    if not(os.path.exists("./outputs")):
-        os.mkdir("./outputs")
-    for filename in os.listdir("./outputs"):
-        body += f"<a href='/get_data_csv/{filename}'>{filename.replace('_', ' ')}</a><br>" \
-                f"<a href='/make-plot/{filename}'>{filename.replace('_', ' ')} -- Plot data</a><br><br>"
+    body = "<p>Data</p><br>"
+    for filename in os.listdir():
+        if ".csv" in filename:
+            body += f"<a href='/get_data_csv/{filename}'>{filename.replace('_', ' ')}</a><br>" \
+                    f"<a href='/make-plot/{filename}'>{filename.replace('_', ' ')} -- Plot data</a><br><br>"
     body += "<br><br>"
     for filename in os.listdir("./outputs"):
         body += f"<img src='/make-plot/{filename}'>"

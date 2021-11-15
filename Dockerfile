@@ -24,10 +24,6 @@ COPY exchange.py .
 
 RUN true
 
-COPY . .
-
-RUN true
-
 COPY requirements.txt .
 
 RUN true
