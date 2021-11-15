@@ -22,6 +22,69 @@ from matplotlib.figure import Figure
 import io
 import numpy as np
 
+plt.rcParams['figure.figsize'] = [7.50, 3.50]
+plt.rcParams['figure.autolayout'] = True
+
+app = Flask(__name__)
+
+
+def plot(data, axis):
+    """
+    Plots nested list using pyplot
+
+    Args:
+        data (list): Nested list, with headings in first row
+    """
+    headings = data.pop(0)
+    plot_data = list()
+    for row in data:
+        plot_row = [float(num) for num in row]
+        if plot_row.count(0.0) < len(plot_row):
+            plot_data.append(plot_row)
+    plot_data = np.array(plot_data).T.tolist()
+    for row in plot_data:
+        axis.plot(row)
+
+
+@app.route('/make-plot/<filename>')
+def plot_png(filename):
+    fig = Figure()
+    csv_data = read_csv(filename)
+    axis = fig.add_subplot(1, 1, 1)
+    plot(csv_data, axis)
+    output = io.BytesIO()
+    FigureCanvas(fig).print_png(output)
+    return Response(output.getvalue(), mimetype='image/png')
+
+
+@app.route("/")
+def data():
+    body = "<p>Data</p><br>"
+    for symbol in symbols_to_trade:
+        body += f"<p>Current exchange discrepancies: {investors[symbol].get_current_disc()}</p><br>"
+    for filename in os.listdir("./outputs/"):
+        body += f"<a href='/get_data_csv/{filename}'>{filename.replace('_', ' ')}</a><br>" \
+                f"<a href='/make-plot/{filename}'>{filename.replace('_', ' ')} -- Plot data</a><br><br>"
+    body += "<br><br>"
+    for filename in os.listdir("./outputs/"):
+        body += f"<img src='/make-plot/{filename}'>"
+    return f'''
+        <html><body>
+        {body}
+        </body></html>
+        '''
+
+
+@app.route("/get_data_csv/<filename>")
+def get_data_csv(filename):
+    with open(f"./outputs/{filename}") as fp:
+        csv = fp.read()
+        print(csv)
+    return Response(
+        csv,
+        mimetype="text/csv",
+        headers={"Content-disposition": f"attachment; filename={filename}"})
+
 
 def read_csv(filename):
     """
@@ -88,6 +151,7 @@ class Investor:
         self.exchange_list = [Binance(self, testnet=testnet), AAX(self), Hitbtc(self), KuCoin(self)]
 
         self.disc_list = list()
+        self.order_status = "HOLD"
         self.sell_order_active = False
         self.buy_order_active = False
         self.latest_buy_order = None
@@ -110,7 +174,6 @@ class Investor:
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
         # print(await self.exchange_list[0].print_trades('BTC'))
         # print(await self.exchange_list[0].get_volume('BTC'))
-        await self.exchange_list[0].update_account_balances()
         self.loops_completed = 0
         while True:
             self.loops_completed += 1
@@ -122,26 +185,13 @@ class Investor:
                 print(bids)
                 continue
             if self.verbose_logging:
-                print(f"{self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
+                print(f"App: {self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
             if self.loops_completed % 30 == 0:
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
-                print(f"\n{self.symbol}: Current time: {time.ctime()}\n"
-                      f"{self.loops_completed} data collection loops completed. "
-                      f"{self.invest_checks_completed} invest checks completed...\n"
-                      f"Bids: {bids}\n"
-                      f"Avg diff: {self.avg_diff}\n"
-                      f"Current holdings. {self.symbol}: {self.exchange_list[0].holdings[self.symbol]}, "
-                      f"USDT: {self.exchange_list[0].holdings['USDT']}\n")
                 write_to_csv(f'bid_data_{self.symbol}', self.fields, [bids[-30:] for bids in self.historical_bids])
                 write_to_csv(f'diffs_data_{self.symbol}', self.fields, [diffs[-30:] for diffs in self.diff_lists])
-                if self.loops_completed % 480 == 0:
-                    await self.exchange_list[0].update_account_balances()
-                    if self.loops_completed % self.calibration_loops == 0:
-                        self.historical_bids = self.historical_bids[-self.calibration_loops:]
-                        self.diff_lists = self.diff_lists[-self.calibration_loops:]
-
             for e in range(0, len(self.exchange_list)):
                 self.historical_bids[e].append(self.exchange_list[e].get_bid(self.symbol))
                 self.diff_lists[e].append(
@@ -167,56 +217,15 @@ class Investor:
             elif d < 0:
                 sell_disc_count += 1
         if self.verbose_logging:
-            print(f"{self.symbol}: {[round(d, 2) for d in self.disc_list]} {self.invest_checks_completed}")
+            print(f"App: {self.symbol}: {[round(d, 2) for d in self.disc_list]} {self.invest_checks_completed}")
         if self.loops_completed > self.calibration_loops:
             if buy_disc_count >= len(self.exchange_list) - 1 and self.exchange_list[0].holdings['USDT'] > 50:
-                order_id = await self.exchange_list[0].buy_market(self.symbol)
-                if order_id is not None:
-                    self.latest_buy_order = order_id
-                    self.buy_order_active = True
-                await asyncio.sleep(.2)
-                if self.buy_order_active:
-                    try:
-                        await self.exchange_list[0].cancel_order(self.symbol, self.latest_buy_order)
-                    except Exception as e:
-                        print(f"{self.symbol} unable to cancel buy order: {e}")
-                    self.buy_order_active = False
+                self.order_status = "BUY"
+                self.buy_order_active = True
+                await asyncio.sleep(1)
+                self.order_status = "HOLD"
         if sell_disc_count >= len(self.exchange_list) - 2:
-            order_id = await self.exchange_list[0].sell_market(self.symbol)
-            if order_id is not None:
-                self.active_sell_orders.append(order_id)
-
-    async def cancel_sell_orders(self):
-        orders_to_cancel = list()
-        while True:
-            if self.verbose_logging and len(self.active_sell_orders) > 0:
-                print(f"{self.symbol} active orders: {self.active_sell_orders}")
-            if self.active_sell_orders != orders_to_cancel:
-                orders_to_cancel = self.active_sell_orders
-            await asyncio.sleep(10)
-            for order in orders_to_cancel:
-                try:
-                    await self.exchange_list[0].cancel_order(self.symbol, int(order))
-                    print(f"{self.symbol} order cancelled. Order ID: {order}")
-                except Exception as e:
-                    print(f"Unable to cancel sell order: {e}")
-                self.active_sell_orders.remove(order)
-
-    async def cancel_buy_orders(self):
-        orders_to_cancel = list()
-        while True:
-            if self.verbose_logging and len(self.active_buy_orders) > 0:
-                print(f"{self.symbol} active buy orders: {self.active_buy_orders}")
-            if self.active_buy_orders != orders_to_cancel:
-                orders_to_cancel = self.active_buy_orders
-            await asyncio.sleep(.5)
-            for order in orders_to_cancel:
-                try:
-                    await self.exchange_list[0].cancel_order(self.symbol, int(order))
-                    print(f"{self.symbol} order cancelled. Order ID: {order}")
-                except Exception as e:
-                    print(f"Unable to cancel sell order: {e}")
-                self.active_buy_orders.remove(order)
+            self.order_status = "SELL"
 
 
 async def start_websockets(exchange, loop):
@@ -227,9 +236,16 @@ async def start_websockets(exchange, loop):
             print(f"{exchange.name} errored out: {e}. Restarting websocket...")
 
 
+def run_app():
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
+
+
 if __name__ == "__main__":
     if not os.path.exists("./outputs/"):
         os.mkdir("./outputs/")
+    app_thread = threading.Thread(target=run_app)
+    app_thread.start()
     symbols_to_trade = ["BTC", "ETH"]
     investors = dict()
     loop = asyncio.get_event_loop()
@@ -240,8 +256,7 @@ if __name__ == "__main__":
                                      timestep=0.5, buy_disc=0.0013,
                                      verbose_logging=True, testnet=False)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in investors[symbol].exchange_list],
-                                    investors[symbol].get_market_data(), investors[symbol].cancel_sell_orders(),
-                                    investors[symbol].cancel_buy_orders()))
+                                    investors[symbol].get_market_data()))
     results = asyncio.gather(*coros)
     loop.run_until_complete(results)
     loop.close()
