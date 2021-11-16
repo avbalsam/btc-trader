@@ -5,7 +5,7 @@ from datetime import datetime
 from cryptoxlib.CryptoXLib import CryptoXLib
 from cryptoxlib.clients.binance import enums
 from cryptoxlib.clients.binance.BinanceWebsocket import AccountSubscription, OrderBookTickerSubscription, \
-    TradeSubscription, OrderBookSymbolTickerSubscription, CandlestickSubscription
+    TradeSubscription, OrderBookSymbolTickerSubscription, CandlestickSubscription, DepthSubscription
 from cryptoxlib.clients.binance.enums import Interval, TimeInForce
 from cryptoxlib.Pair import Pair
 from cryptoxlib.version_conversions import async_run
@@ -19,7 +19,7 @@ def truncate(n: float, decimals=0):
 
 
 class Binance(Exchange):
-    def __init__(self, investor, testnet=True):
+    def __init__(self, investor, testnet=False):
         super().__init__(investor)
         self.name = "Binance"
         self.holdings = {'BTC': 0, 'USDT': 0}
@@ -37,8 +37,7 @@ class Binance(Exchange):
             self.client = CryptoXLib.create_binance_client(self.api_key, self.sec_key)
 
         self.client.compose_subscriptions([
-            OrderBookSymbolTickerSubscription(pair=Pair(self.investor.get_symbol(), "USDT"),
-                                              callbacks=[self.orderbook_ticker_update]),
+            DepthSubscription(pair=Pair(self.investor.get_symbol(), "USDT"), callbacks=[self.orderbook_ticker_update])
         ])
 
         self.client.compose_subscriptions([
@@ -55,7 +54,7 @@ class Binance(Exchange):
             print(f"Callback account update: {assets}")
 
     async def buy_market(self, symbol: str):
-        """Buys 0.0014 bitcoin at market price"""
+        """Buys crypto at market price"""
         usdt_amt = float(self.holdings['USDT'])
         btc_value = usdt_amt - usdt_amt * self.commission / self.get_ask(symbol)
         btc_value = truncate(btc_value - 0.0001, 4)
@@ -129,8 +128,17 @@ class Binance(Exchange):
             symbol = response['data']['s'].replace("USDT", "", 1)
             if symbol in self.best_ask_by_symbol and self.best_ask_by_symbol[symbol] == response['data']['a']:
                 return
-            self.best_ask_by_symbol[symbol] = response['data']['a']
-            self.best_bid_by_symbol[symbol] = response['data']['b']
+            orderbook_bids = response['data']['b']
+            orderbook_asks = response['data']['a']
+            # Look for best bid and ask whose quantity is not zero
+            for bid in orderbook_bids:
+                if float(bid[1]) != 0.0:
+                    self.best_bid_by_symbol[symbol] = float(bid[0])
+                    break
+            for ask in orderbook_asks:
+                if float(ask[1]) != 0.0:
+                    self.best_ask_by_symbol[symbol] = float(ask[0])
+                    break
             await self.invest()
         except KeyError:
             print(f"Out: [{response}]")

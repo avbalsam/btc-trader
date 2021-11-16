@@ -63,7 +63,8 @@ def data():
            f"BTC: {investors['BTC'].exchange_list[0].holdings['BTC']}, " \
            f"ETH: {investors['ETH'].exchange_list[0].holdings['ETH']}</p><br>"
     for symbol in symbols_to_trade:
-        body += f"<p>Current exchange discrepancies: {investors[symbol].get_current_disc()}</p><br>"
+        body += f"<p>Current exchange discrepancies: {investors[symbol].get_current_disc()}</p>" \
+                f"<p>Avg diff: {investors[symbol].avg_diff}</p><br>"
     for filename in os.listdir("./outputs/"):
         body += f"<a href='/get_data_csv/{filename}'>{filename.replace('_', ' ')}</a><br>" \
                 f"<a href='/make-plot/{filename}'>{filename.replace('_', ' ')} -- Plot data</a><br><br>"
@@ -115,10 +116,15 @@ def write_to_csv(filename, fields, data):
     """
     data = np.array(data).T.tolist()
     try:
-        with open(f"./outputs/{filename}.csv", "w", newline='') as f:
-            write = csv.writer(f)
-            write.writerow(fields)
-            write.writerows(data)
+        if os.path.exists(f"./outputs/{filename}.csv"):
+            with open(f"./outputs/{filename}.csv", "a", newline='') as f:
+                write = csv.writer(f)
+                write.writerows(data)
+        else:
+            with open(f"./outputs/{filename}.csv", "w", newline='') as f:
+                write = csv.writer(f)
+                write.writerow(fields)
+                write.writerows(data)
     except PermissionError:
         print("Unable to gain access to file. Please close any programs which are using " + filename + ".csv...")
 
@@ -147,17 +153,10 @@ class Investor:
         self.verbose_logging = verbose_logging
         self.exchange_list = [Binance(self, testnet=testnet), AAX(self), Hitbtc(self), KuCoin(self)]
 
-        self.disc_list = list()
-        self.order_status = "HOLD"
-        self.sell_order_active = False
-        self.buy_order_active = False
-        self.latest_buy_order = None
-        self.active_sell_orders = list()
-        self.active_buy_orders = list()
         self.historical_bids = [[e.get_bid(symbol)] for e in self.exchange_list]
         self.fields = [e.name for e in self.exchange_list]
         self.diff_lists = [[e.get_bid(symbol) - self.exchange_list[0].get_bid(symbol)] for e in self.exchange_list]
-        self.avg_diff = [e.get_bid(symbol) - self.exchange_list[0].get_bid(symbol) for e in self.exchange_list]
+        self.avg_diff = [e.get_bid(symbol) - self.exchange_list[0].get_ask(symbol) for e in self.exchange_list]
         self.loops_completed = 0
         self.invest_checks_completed = 0
 
@@ -165,7 +164,7 @@ class Investor:
         return self.symbol
 
     def get_current_disc(self):
-        return self.disc_list
+        return [diff[-1] for diff in self.diff_lists]
 
     async def get_market_data(self):
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
@@ -184,49 +183,22 @@ class Investor:
                 continue
             if self.verbose_logging:
                 print(f"App: {self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
-            if self.loops_completed % 1000 == 0:
+            if self.loops_completed % 30 == 0:
                 await self.exchange_list[0].update_account_balances()
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
-                write_to_csv(f'bid_data_{self.symbol}', self.fields, [bids[-1000:] for bids in self.historical_bids])
-                write_to_csv(f'diffs_data_{self.symbol}', self.fields, [diffs[-1000:] for diffs in self.diff_lists])
-                self.historical_bids = self.historical_bids[-1000:]
-                self.diff_lists = self.diff_lists[-1000:]
+                write_to_csv(f'bid_data_{self.symbol}', self.fields, self.historical_bids)
+                write_to_csv(f'diffs_data_{self.symbol}', self.fields, self.diff_lists)
+                self.historical_bids = [[e.get_bid(symbol)] for e in self.exchange_list]
+                self.diff_lists = [[e.get_bid(symbol) - self.exchange_list[0].get_ask(symbol)]
+                                   for e in self.exchange_list]
             for e in range(0, len(self.exchange_list)):
                 self.historical_bids[e].append(self.exchange_list[e].get_bid(self.symbol))
                 self.diff_lists[e].append(
-                    self.exchange_list[e].get_bid(self.symbol) - self.exchange_list[0].get_bid(self.symbol))
-                if self.loops_completed <= self.calibration_loops:
-                    self.avg_diff[e] = self.avg_diff[e] * ((self.loops_completed - 1) / self.loops_completed) + \
-                                       self.diff_lists[e][-1] / self.loops_completed
-                else:
-                    self.avg_diff[e] = np.mean(self.diff_lists[e][-self.calibration_loops:])
-            await self.invest()
-
-    async def invest(self):
-        if self.buy_order_active or len(self.active_sell_orders) > 0:
-            return
-        self.invest_checks_completed += 1
-        buy_disc_count = 0
-        sell_disc_count = 0
-        self.disc_list = [self.exchange_list[e].get_ask(self.symbol) - self.exchange_list[0].get_ask(self.symbol) -
-                          self.avg_diff[e] for e in range(0, len(self.exchange_list))]
-        for d in self.disc_list:
-            if d > self.exchange_list[0].get_ask(self.symbol) * self.buy_disc:
-                buy_disc_count += 1
-            elif d < 0:
-                sell_disc_count += 1
-        if self.verbose_logging:
-            print(f"App: {self.symbol}: {[round(d, 2) for d in self.disc_list]} {self.invest_checks_completed}")
-        if self.loops_completed > self.calibration_loops:
-            if buy_disc_count >= len(self.exchange_list) - 1 and self.exchange_list[0].holdings['USDT'] > 50:
-                self.order_status = "BUY"
-                self.buy_order_active = True
-                await asyncio.sleep(1)
-                self.order_status = "HOLD"
-        if sell_disc_count >= len(self.exchange_list) - 2:
-            self.order_status = "SELL"
+                    self.exchange_list[e].get_bid(self.symbol) - self.exchange_list[0].get_ask(self.symbol))
+                self.avg_diff[e] = self.avg_diff[e] * ((self.loops_completed - 1) / self.loops_completed) \
+                                   + self.diff_lists[e][-1] / self.loops_completed
 
 
 async def start_websockets(exchange, loop):

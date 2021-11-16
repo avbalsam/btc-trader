@@ -5,7 +5,7 @@ from datetime import datetime
 from cryptoxlib.CryptoXLib import CryptoXLib
 from cryptoxlib.clients.binance import enums
 from cryptoxlib.clients.binance.BinanceWebsocket import AccountSubscription, OrderBookTickerSubscription, \
-    TradeSubscription, OrderBookSymbolTickerSubscription, CandlestickSubscription
+    TradeSubscription, OrderBookSymbolTickerSubscription, CandlestickSubscription, DepthSubscription
 from cryptoxlib.clients.binance.enums import Interval, TimeInForce
 from cryptoxlib.Pair import Pair
 from cryptoxlib.version_conversions import async_run
@@ -37,8 +37,7 @@ class Binance(Exchange):
             self.client = CryptoXLib.create_binance_client(self.api_key, self.sec_key)
 
         self.client.compose_subscriptions([
-            OrderBookSymbolTickerSubscription(pair=Pair(self.investor.get_symbol(), "USDT"),
-                                              callbacks=[self.orderbook_ticker_update]),
+            DepthSubscription(pair=Pair(self.investor.get_symbol(), "USDT"), callbacks=[self.orderbook_ticker_update])
         ])
 
         self.client.compose_subscriptions([
@@ -53,55 +52,6 @@ class Binance(Exchange):
                 quantity = asset['f']
                 self.holdings[symbol] = float(quantity)
             print(f"Callback account update: {assets}")
-
-    async def buy_market(self, symbol: str):
-        """Buys 0.0014 bitcoin at market price"""
-        usdt_amt = float(self.holdings['USDT'])
-        btc_value = usdt_amt - usdt_amt * self.commission / self.get_ask(symbol)
-        expected_buy_price = truncate(self.get_ask(symbol) + 5, 4)
-        if btc_value >= 0.0011:
-            # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
-            # buy_price = truncate(float(response["response"]["askPrice"]), 5)
-            try:
-                response = await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY,
-                                                          type=enums.OrderType.LIMIT,
-                                                          quantity="0.0011", price=str(expected_buy_price),
-                                                          time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
-                                                          new_order_response_type=enums.OrderResponseType.FULL)
-                order_id = response['response']['orderId']
-                print(f"Buying .0014 {symbol} for {expected_buy_price} per {symbol}. "
-                      f"{symbol} value of current USDT balance: {btc_value}")
-                return order_id
-            except Exception as e:
-                print(f"Error while buying {symbol}: {e}")
-        else:
-            print(f"Insufficient account balance to perform {symbol} buy. "
-                  f"Total {symbol} value of USDT balance: {btc_value}")
-
-    async def sell_market(self, symbol: str):
-        """Attempts to sell all bitcoin at market price"""
-        btc_amt = float(self.holdings[symbol])
-        if btc_amt < 0.001:
-            return
-        # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
-        # sell_price = str(truncate(float(response["response"]["bidPrice"]), 5))
-        sell_price = str(truncate(self.get_bid(symbol), 2))
-        print(f"Sell price: {sell_price}")
-        sell_amt = str(truncate(btc_amt, 4))
-        try:
-            response = await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL,
-                                                      type=enums.OrderType.LIMIT,
-                                                      quantity=sell_amt, price=sell_price,
-                                                      time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
-                                                      new_order_response_type=enums.OrderResponseType.FULL)
-            order_id = response['response']['orderId']
-            print(f"Selling {sell_amt} {symbol} for {sell_price} per {symbol}. Total amount sold: {sell_amt}")
-            return order_id
-        except Exception as e:
-            print(f"Error while selling {symbol}: {e}")
-
-    async def cancel_order(self, symbol: str, order_id: int) -> None:
-        await self.client.cancel_order(pair=Pair(symbol, "USDT"), order_id=str(order_id))
 
     async def update_account_balances(self) -> None:
         """Updates self.holdings based on balances in client account"""
@@ -128,9 +78,17 @@ class Binance(Exchange):
             symbol = response['data']['s'].replace("USDT", "", 1)
             if symbol in self.best_ask_by_symbol and self.best_ask_by_symbol[symbol] == response['data']['a']:
                 return
-            self.best_ask_by_symbol[symbol] = response['data']['a']
-            self.best_bid_by_symbol[symbol] = response['data']['b']
-            await self.invest()
+            orderbook_bids = response['data']['b']
+            orderbook_asks = response['data']['a']
+            # Look for best bid and ask whose quantity is not zero
+            for bid in orderbook_bids:
+                if float(bid[1]) != 0.0:
+                    self.best_bid_by_symbol[symbol] = float(bid[0])
+                    break
+            for ask in orderbook_asks:
+                if float(ask[1]) != 0.0:
+                    self.best_ask_by_symbol[symbol] = float(ask[0])
+                    break
         except KeyError:
             print(f"Out: [{response}]")
 
