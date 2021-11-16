@@ -202,22 +202,6 @@ class Investor:
                     print(f"Unable to cancel sell order: {e}")
                 self.active_sell_orders.remove(order)
 
-    async def cancel_buy_orders(self):
-        orders_to_cancel = list()
-        while True:
-            if self.verbose_logging and len(self.active_buy_orders) > 0:
-                print(f"{self.symbol} active buy orders: {self.active_buy_orders}")
-            if self.active_buy_orders != orders_to_cancel:
-                orders_to_cancel = self.active_buy_orders
-            await asyncio.sleep(.5)
-            for order in orders_to_cancel:
-                try:
-                    await self.exchange_list[0].cancel_order(self.symbol, int(order))
-                    print(f"{self.symbol} order cancelled. Order ID: {order}")
-                except Exception as e:
-                    print(f"Unable to cancel sell order: {e}")
-                self.active_buy_orders.remove(order)
-
 
 async def start_websockets(exchange, loop):
     while True:
@@ -240,8 +224,7 @@ if __name__ == "__main__":
                                      timestep=0.5, buy_disc=0.0013,
                                      verbose_logging=True, testnet=False)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in investors[symbol].exchange_list],
-                                    investors[symbol].get_market_data(), investors[symbol].cancel_sell_orders(),
-                                    investors[symbol].cancel_buy_orders()))
+                                    investors[symbol].get_market_data(), investors[symbol].cancel_sell_orders()))
     results = asyncio.gather(*coros)
     loop.run_until_complete(results)
     loop.close()

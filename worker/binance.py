@@ -58,24 +58,25 @@ class Binance(Exchange):
         """Buys 0.0014 bitcoin at market price"""
         usdt_amt = float(self.holdings['USDT'])
         btc_value = usdt_amt - usdt_amt * self.commission / self.get_ask(symbol)
-        expected_buy_price = truncate(self.get_ask(symbol) + 5, 4)
+        btc_value = truncate(btc_value - 0.0001, 4)
+        expected_buy_price = truncate(self.get_ask(symbol), 2)
         if btc_value >= 0.0011:
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
             # buy_price = truncate(float(response["response"]["askPrice"]), 5)
             try:
-                response = await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.BUY,
+                response = await self.client.create_order(Pair(symbol, "USDT"), side=enums.OrderSide.BUY,
                                                           type=enums.OrderType.LIMIT,
-                                                          quantity="0.0011", price=str(expected_buy_price),
-                                                          time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
+                                                          quantity=str(btc_value), price=str(expected_buy_price),
+                                                          time_in_force=TimeInForce.FILL_OR_KILL,
                                                           new_order_response_type=enums.OrderResponseType.FULL)
                 order_id = response['response']['orderId']
-                print(f"Buying .0014 {symbol} for {expected_buy_price} per {symbol}. "
-                      f"{symbol} value of current USDT balance: {btc_value}")
+                print(f"Buying {btc_value} {symbol} for {expected_buy_price} per {symbol}. "
+                      f"{symbol} value of current USDT balance: {btc_value}. Order ID: {order_id}")
                 return order_id
             except Exception as e:
                 print(f"Error while buying {symbol}: {e}")
         else:
-            print(f"Insufficient account balance to perform {symbol} buy. "
+            print(f"Insufficient account balance to perform {symbol} buy of {btc_value} {symbol}. "
                   f"Total {symbol} value of USDT balance: {btc_value}")
 
     async def sell_market(self, symbol: str):
@@ -89,8 +90,8 @@ class Binance(Exchange):
         print(f"Sell price: {sell_price}")
         sell_amt = str(truncate(btc_amt, 4))
         try:
-            response = await self.client.create_order(Pair("BTC", "USDT"), side=enums.OrderSide.SELL,
-                                                      type=enums.OrderType.LIMIT,
+            response = await self.client.create_order(Pair(symbol, "USDT"), side=enums.OrderSide.SELL,
+                                                      type=enums.OrderType.MARKET,
                                                       quantity=sell_amt, price=sell_price,
                                                       time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
                                                       new_order_response_type=enums.OrderResponseType.FULL)
