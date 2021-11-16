@@ -134,8 +134,8 @@ class Investor:
                       f"Avg diff: {self.avg_diff}\n"
                       f"Current holdings. {self.symbol}: {self.exchange_list[0].holdings[self.symbol]}, "
                       f"USDT: {self.exchange_list[0].holdings['USDT']}\n")
-                write_to_csv(f'bid_data_{self.symbol}', self.fields, [bids[-30:] for bids in self.historical_bids])
-                write_to_csv(f'diffs_data_{self.symbol}', self.fields, [diffs[-30:] for diffs in self.diff_lists])
+                # write_to_csv(f'bid_data_{self.symbol}', self.fields, [bids[-30:] for bids in self.historical_bids])
+                # write_to_csv(f'diffs_data_{self.symbol}', self.fields, [diffs[-30:] for diffs in self.diff_lists])
                 if self.loops_completed % 480 == 0:
                     await self.exchange_list[0].update_account_balances()
                     if self.loops_completed % self.calibration_loops == 0:
@@ -212,8 +212,6 @@ async def start_websockets(exchange, loop):
 
 
 if __name__ == "__main__":
-    if not os.path.exists("./outputs/"):
-        os.mkdir("./outputs/")
     symbols_to_trade = ["BTC", "ETH"]
     investors = dict()
     loop = asyncio.get_event_loop()
@@ -221,8 +219,8 @@ if __name__ == "__main__":
     for symbol in symbols_to_trade:
         investors[symbol] = Investor(symbol=symbol,
                                      calibration_time=10000,
-                                     timestep=0.5, buy_disc=0.0013,
-                                     verbose_logging=True, testnet=False)
+                                     timestep=0.5, buy_disc=0.002,
+                                     verbose_logging=False, testnet=False)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in investors[symbol].exchange_list],
                                     investors[symbol].get_market_data(), investors[symbol].cancel_sell_orders()))
     results = asyncio.gather(*coros)
