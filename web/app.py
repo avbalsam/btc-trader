@@ -115,15 +115,10 @@ def write_to_csv(filename, fields, data):
     """
     data = np.array(data).T.tolist()
     try:
-        if os.path.exists(f"./outputs/{filename}.csv"):
-            with open(f"./outputs/{filename}.csv", "a", newline='') as f:
-                write = csv.writer(f)
-                write.writerows(data)
-        else:
-            with open(f"./outputs/{filename}.csv", "w", newline='') as f:
-                write = csv.writer(f)
-                write.writerow(fields)
-                write.writerows(data)
+        with open(f"./outputs/{filename}.csv", "w", newline='') as f:
+            write = csv.writer(f)
+            write.writerow(fields)
+            write.writerows(data)
     except PermissionError:
         print("Unable to gain access to file. Please close any programs which are using " + filename + ".csv...")
 
@@ -189,13 +184,15 @@ class Investor:
                 continue
             if self.verbose_logging:
                 print(f"App: {self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
-            if self.loops_completed % 30 == 0:
+            if self.loops_completed % 1000 == 0:
                 await self.exchange_list[0].update_account_balances()
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
-                write_to_csv(f'bid_data_{self.symbol}', self.fields, [bids[-30:] for bids in self.historical_bids])
-                write_to_csv(f'diffs_data_{self.symbol}', self.fields, [diffs[-30:] for diffs in self.diff_lists])
+                write_to_csv(f'bid_data_{self.symbol}', self.fields, [bids[-1000:] for bids in self.historical_bids])
+                write_to_csv(f'diffs_data_{self.symbol}', self.fields, [diffs[-1000:] for diffs in self.diff_lists])
+                self.historical_bids = self.historical_bids[-1000:]
+                self.diff_lists = self.diff_lists[-1000:]
             for e in range(0, len(self.exchange_list)):
                 self.historical_bids[e].append(self.exchange_list[e].get_bid(self.symbol))
                 self.diff_lists[e].append(
