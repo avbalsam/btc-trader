@@ -157,6 +157,7 @@ class Investor:
         self.fields = [e.name for e in self.exchange_list]
         self.diff_lists = [[e.get_bid(symbol) - self.exchange_list[0].get_bid(symbol)] for e in self.exchange_list]
         self.avg_diff = [e.get_bid(symbol) - self.exchange_list[0].get_ask(symbol) for e in self.exchange_list]
+        self.current_disc = [self.diff_lists[e][-1] - self.avg_diff[e] for e in range(0,len(self.exchange_list))]
         self.loops_completed = 0
         self.invest_checks_completed = 0
 
@@ -164,7 +165,7 @@ class Investor:
         return self.symbol
 
     def get_current_disc(self):
-        return [self.diff_lists[d][-1] - self.avg_diff[d] for d in range(0, len(self.diff_lists))]
+        return self.current_disc
 
     async def get_market_data(self):
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
@@ -197,6 +198,7 @@ class Investor:
                 self.historical_bids[e].append(self.exchange_list[e].get_bid(self.symbol))
                 self.diff_lists[e].append(
                     self.exchange_list[e].get_bid(self.symbol) - self.exchange_list[0].get_ask(self.symbol))
+                self.current_disc[e] = self.diff_lists[e][-1] - self.avg_diff[e]
                 self.avg_diff[e] = self.avg_diff[e] * ((self.loops_completed - 1) / self.loops_completed) \
                                    + self.diff_lists[e][-1] / self.loops_completed
 
