@@ -56,8 +56,9 @@ class Binance(Exchange):
     async def buy_market(self, symbol: str):
         """Buys crypto at market price"""
         usdt_amt = float(self.holdings['USDT'])
-        btc_value = usdt_amt - usdt_amt * self.commission / self.get_ask(symbol)
+        btc_value = (usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol)
         btc_value = truncate(btc_value - 0.0001, 4)
+        print(f"Buy amt: {btc_value}")
         expected_buy_price = truncate(self.get_ask(symbol), 2)
         if btc_value >= 0.0011:
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
@@ -66,7 +67,7 @@ class Binance(Exchange):
                 response = await self.client.create_order(Pair(symbol, "USDT"), side=enums.OrderSide.BUY,
                                                           type=enums.OrderType.LIMIT,
                                                           quantity=str(btc_value), price=str(expected_buy_price),
-                                                          time_in_force=TimeInForce.FILL_OR_KILL,
+                                                          time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                                           new_order_response_type=enums.OrderResponseType.FULL)
                 order_id = response['response']['orderId']
                 print(f"Buying {btc_value} {symbol} for {expected_buy_price} per {symbol}. "
@@ -90,7 +91,7 @@ class Binance(Exchange):
         sell_amt = str(truncate(btc_amt, 4))
         try:
             response = await self.client.create_order(Pair(symbol, "USDT"), side=enums.OrderSide.SELL,
-                                                      type=enums.OrderType.MARKET,
+                                                      type=enums.OrderType.LIMIT,
                                                       quantity=sell_amt, price=sell_price,
                                                       time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
                                                       new_order_response_type=enums.OrderResponseType.FULL)

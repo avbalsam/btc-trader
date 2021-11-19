@@ -156,17 +156,10 @@ class Investor:
             print(f"{self.symbol}: {[round(d, 2) for d in self.disc_list]} {self.invest_checks_completed}")
         if self.loops_completed > self.calibration_loops and buy_disc_count >= len(self.exchange_list) - 1 \
                 and self.exchange_list[0].holdings['USDT'] > 10:
-            order_id = await self.exchange_list[0].buy_market(self.symbol)
-            if order_id is not None:
-                self.latest_buy_order = order_id
-                self.buy_order_active = True
-            await asyncio.sleep(.3)
-            if self.buy_order_active:
-                try:
-                    await self.exchange_list[0].cancel_order(self.symbol, self.latest_buy_order)
-                except Exception as e:
-                    print(f"{self.symbol} unable to cancel buy order: {e}")
-                self.buy_order_active = False
+            await self.exchange_list[0].buy_market(self.symbol)
+            self.buy_order_active = True
+            await asyncio.sleep(.2)
+            self.buy_order_active = False
         if sell_disc_count >= len(self.exchange_list) - 2:
             order_id = await self.exchange_list[0].sell_market(self.symbol)
             if order_id is not None:
@@ -205,7 +198,7 @@ if __name__ == "__main__":
     for symbol in symbols_to_trade:
         investors[symbol] = Investor(symbol=symbol,
                                      calibration_time=10000,
-                                     timestep=0.5, buy_disc=0.00015, sell_disc=0,
+                                     timestep=0.5, buy_disc=0.0015, sell_disc=0,
                                      verbose_logging=False, testnet=False)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in investors[symbol].exchange_list],
                                     investors[symbol].get_market_data(), investors[symbol].cancel_sell_orders()))
