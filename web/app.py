@@ -164,7 +164,7 @@ class Investor:
         return self.symbol
 
     def get_current_disc(self):
-        return [diff[-1] for diff in self.diff_lists]
+        return [self.diff_lists[d][-1] - self.avg_diff[d] for d in range(0, len(self.diff_lists))]
 
     async def get_market_data(self):
         # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
