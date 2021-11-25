@@ -131,7 +131,7 @@ class Investor:
                 continue
             if self.verbose_logging:
                 print(f"{self.symbol}: {time.ctime()} {self.bids} {self.loops_completed}")
-            if self.loops_completed % 60 == 0:
+            if self.loops_completed % 60 == 0 and self.verbose_logging:
                 print(f"\n{self.symbol}: Current time: {time.ctime()}\n"
                       f"{self.loops_completed} data collection loops completed. "
                       f"{self.invest_checks_completed} invest checks completed...\n"
@@ -191,15 +191,15 @@ async def start_websockets(exchange, loop):
 
 
 if __name__ == "__main__":
-    symbols_to_trade = ["BTC", "ETH"]
+    symbols_to_trade = ["BTC"]
     investors = dict()
     loop = asyncio.get_event_loop()
     coros = list()
     for symbol in symbols_to_trade:
         investors[symbol] = Investor(symbol=symbol,
                                      calibration_time=10000,
-                                     timestep=0.5, buy_disc=0.0015, sell_disc=0,
-                                     verbose_logging=False, testnet=False)
+                                     timestep=0.5, buy_disc=0.001, sell_disc=0,
+                                     verbose_logging=True, testnet=False)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in investors[symbol].exchange_list],
                                     investors[symbol].get_market_data(), investors[symbol].cancel_sell_orders()))
     results = asyncio.gather(*coros)

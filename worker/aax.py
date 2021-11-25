@@ -28,6 +28,6 @@ class AAX(Exchange):
                 return
             self.best_bid_by_symbol[symbol] = response['bids'][0][0]
             self.best_ask_by_symbol[symbol] = response['asks'][0][0]
-            # await self.invest()
+            await self.invest()
         except KeyError:
             print(f"Out: [{response}]")
