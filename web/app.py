@@ -59,7 +59,8 @@ def plot_png(filename):
 
 @app.route("/")
 def data():
-    body = f"<p>Current account balances. USDT: {investors['BTC'].exchange_list[0].holdings['USDT']}, " \
+    body = f"<p>Loops completed so far: {investors['BTC'].loops_completed}" \
+           f"<p>Current account balances. USDT: {investors['BTC'].exchange_list[0].holdings['USDT']}, " \
            f"BTC: {investors['BTC'].exchange_list[0].holdings['BTC']}, " \
            f"ETH: {investors['ETH'].exchange_list[0].holdings['ETH']}</p><br>"
     for symbol in symbols_to_trade:

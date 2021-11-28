@@ -81,6 +81,7 @@ class Investor:
         self.sell_disc = sell_disc
         self.verbose_logging = verbose_logging
         self.exchange_list = [Binance(self, testnet=testnet), AAX(self), Hitbtc(self), KuCoin(self)]
+        self.attempted_buys = list()
 
         self.bids = list()
         self.asks = list()
@@ -131,7 +132,8 @@ class Investor:
                       f"{self.invest_checks_completed} invest checks completed...\n"
                       f"Bids: {self.bids}\n"
                       f"Current holdings. {self.symbol}: {self.exchange_list[0].holdings[self.symbol]}, "
-                      f"USDT: {self.exchange_list[0].holdings['USDT']}\n")
+                      f"USDT: {self.exchange_list[0].holdings['USDT']}\n"
+                      f"Attempted buys: {self.attempted_buys}")
                 await self.exchange_list[0].update_account_balances()
             await self.invest()
 
@@ -193,7 +195,7 @@ if __name__ == "__main__":
         investors[symbol] = Investor(symbol=symbol,
                                      calibration_time=10000,
                                      timestep=0.5, buy_disc=0.001, sell_disc=0,
-                                     verbose_logging=True, testnet=False)
+                                     verbose_logging=False, testnet=False)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in investors[symbol].exchange_list],
                                     investors[symbol].get_market_data(), investors[symbol].cancel_sell_orders()))
     results = asyncio.gather(*coros)

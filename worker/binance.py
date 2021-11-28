@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from datetime import datetime
 
 from cryptoxlib.CryptoXLib import CryptoXLib
@@ -60,6 +61,7 @@ class Binance(Exchange):
         btc_value = truncate(btc_value - 0.0001, 4)
         print(f"Buy amt: {btc_value}")
         expected_buy_price = truncate(self.get_ask(symbol), 2)
+        self.investor.attempted_buys.append({"Time": time.ctime(), "Amount": btc_value, "Price": expected_buy_price})
         if btc_value >= 0.0011:
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
             # buy_price = truncate(float(response["response"]["askPrice"]), 5)
