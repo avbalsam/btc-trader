@@ -7,7 +7,6 @@ import logging
 import os
 
 from binance import Binance
-from aax import AAX
 from hitbtc import Hitbtc
 from ku import KuCoin
 
@@ -152,7 +151,7 @@ class Investor:
         self.calibration_loops = round(calibration_time / timestep)
         self.buy_disc = buy_disc
         self.verbose_logging = verbose_logging
-        self.exchange_list = [Binance(self, testnet=testnet), AAX(self), Hitbtc(self), KuCoin(self)]
+        self.exchange_list = [Binance(self, testnet=testnet), Hitbtc(self), KuCoin(self)]
 
         self.historical_bids = [[e.get_bid(symbol)] for e in self.exchange_list]
         self.fields = [e.name for e in self.exchange_list]

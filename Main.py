@@ -7,7 +7,6 @@ import logging
 import os
 
 from binance import Binance
-from aax import AAX
 from hitbtc import Hitbtc
 from ku import KuCoin
 
@@ -80,7 +79,7 @@ class Investor:
         self.buy_disc = buy_disc
         self.sell_disc = sell_disc
         self.verbose_logging = verbose_logging
-        self.exchange_list = [Binance(self, testnet=testnet), AAX(self), Hitbtc(self), KuCoin(self)]
+        self.exchange_list = [Binance(self, testnet=testnet), Hitbtc(self), KuCoin(self)]
         self.attempted_buys = list()
 
         self.bids = list()

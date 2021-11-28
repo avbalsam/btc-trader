@@ -4,10 +4,6 @@ COPY app.py .
 
 RUN true
 
-COPY aax.py .
-
-RUN true
-
 COPY binance.py .
 
 RUN true
