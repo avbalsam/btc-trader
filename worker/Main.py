@@ -13,13 +13,7 @@ from ku import KuCoin
 
 import csv
 
-import matplotlib.pyplot as plt
-from flask import Flask, Response
-
 import os
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-from matplotlib.figure import Figure
-import io
 import numpy as np
 
 
