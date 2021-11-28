@@ -1,4 +1,5 @@
 numpy==1.21.2
 cryptoxlib_aio==5.2.1
 python-kucoin==2.1.3
+Flask==2.0.2
 matplotlib
