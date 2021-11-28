@@ -200,6 +200,9 @@ class Investor:
                 self.avg_diff[e] = self.avg_diff[e] * ((self.loops_completed - 1) / self.loops_completed) \
                                    + self.diff_lists[e][-1] / self.loops_completed
 
+    async def invest(self):
+        pass
+
 
 async def start_websockets(exchange, loop):
     while True:
