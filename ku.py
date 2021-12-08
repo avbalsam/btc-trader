@@ -1,3 +1,5 @@
+import asyncio
+
 from kucoin.client import Client
 from kucoin.asyncio import KucoinSocketManager
 
@@ -5,20 +7,23 @@ from exchange import Exchange
 
 
 class KuCoin(Exchange):
-    def __init__(self, investor):
-        super().__init__(investor)
+    def __init__(self, symbols_to_trade: list, update_event: asyncio.Event):
+        super().__init__()
         global loop
 
         api_key = '617bad17b6ab210001dd3593'
         api_secret = '9ea8f4ba-0613-4561-8634-66f6b2428d3d'
         api_passphrase = 'Avrahamthegreat1@'
+        self.update_event = update_event
 
         self.client = Client(api_key, api_secret, api_passphrase)
         self.name = "KuCoin"
+        self.symbols_to_trade = symbols_to_trade
 
     async def start_websockets(self, loop):
         ksm = await KucoinSocketManager.create(loop, self.client, self.order_book_update)
-        await ksm.subscribe(f'/market/ticker:{self.investor.get_symbol()}-USDT')
+        for symbol in self.symbols_to_trade:
+            await ksm.subscribe(f'/market/ticker:{symbol}-USDT')
 
     async def order_book_update(self, msg):
         # print(f"Callback order book update: {msg}")
@@ -28,4 +33,4 @@ class KuCoin(Exchange):
                 return
             self.best_ask_by_symbol[symbol] = msg['data']['bestAsk']
             self.best_bid_by_symbol[symbol] = msg['data']['bestBid']
-            await self.invest()
+            self.update_event.set()

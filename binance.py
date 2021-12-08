@@ -20,11 +20,13 @@ def truncate(n: float, decimals=0):
 
 
 class Binance(Exchange):
-    def __init__(self, investor, testnet=False):
-        super().__init__(investor)
+    def __init__(self, symbols_to_trade: list, update_event: asyncio.Event, testnet: bool = False):
+        super().__init__()
         self.name = "Binance"
         self.holdings = {'BTC': 0, 'USDT': 0}
         self.commission = .00075
+        self.symbols_to_trade = symbols_to_trade
+        self.update_event = update_event
 
         self.api_key = "mf47OdnGELNlVentiyRGQOmKvl7HjpXn7zLPwA5xnOWSM5Dv3kCAwk4II81oQfLP"
         self.sec_key = "ABiqm9CQRV2tF9dQOaplFv8esOfqYFHyVDVjDVLK3AYvMk1qpNoSYy0mN8tMwR3f"
@@ -38,7 +40,8 @@ class Binance(Exchange):
             self.client = CryptoXLib.create_binance_client(self.api_key, self.sec_key)
 
         self.client.compose_subscriptions([
-            DepthSubscription(pair=Pair(self.investor.get_symbol(), "USDT"), callbacks=[self.orderbook_ticker_update])
+            DepthSubscription(pair=Pair(symbol, "USDT"), callbacks=[self.orderbook_ticker_update])
+            for symbol in symbols_to_trade
         ])
 
         self.client.compose_subscriptions([
@@ -61,7 +64,6 @@ class Binance(Exchange):
         btc_value = truncate(btc_value - 0.0001, 4)
         print(f"Buy amt: {btc_value}")
         expected_buy_price = truncate(self.get_ask(symbol), 2)
-        self.investor.attempted_buys.append({"Time": time.ctime(), "Amount": btc_value, "Price": expected_buy_price})
         if btc_value >= 0.0011:
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
             # buy_price = truncate(float(response["response"]["askPrice"]), 5)
@@ -142,7 +144,7 @@ class Binance(Exchange):
                 if float(ask[1]) != 0.0:
                     self.best_ask_by_symbol[symbol] = float(ask[0])
                     break
-            await self.invest()
+            self.update_event.set()
         except KeyError:
             print(f"Out: [{response}]")
 

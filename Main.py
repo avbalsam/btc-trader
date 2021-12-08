@@ -79,13 +79,12 @@ class Investor:
         self.buy_disc = buy_disc
         self.sell_disc = sell_disc
         self.verbose_logging = verbose_logging
-        self.exchange_list = [Binance(self, testnet=testnet), Hitbtc(self), KuCoin(self)]
         self.attempted_buys = list()
 
         self.bids = list()
         self.asks = list()
         self.current_diff = list()
-        self.avg_diff = [e.get_bid(symbol) - self.exchange_list[0].get_ask(symbol) for e in self.exchange_list]
+        self.avg_diff = [e.get_bid(symbol) - exchange_list[0].get_ask(symbol) for e in exchange_list]
 
         self.disc_list = list()
         self.sell_order_active = False
@@ -103,21 +102,21 @@ class Investor:
         return self.disc_list
 
     async def get_market_data(self):
-        # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
-        # print(await self.exchange_list[0].print_trades('BTC'))
-        # print(await self.exchange_list[0].get_volume('BTC'))
-        await self.exchange_list[0].update_account_balances()
+        # print(await exchange_list[0].get_profit('BTC', commission=.00075))
+        # print(await exchange_list[0].print_trades('BTC'))
+        # print(await exchange_list[0].get_volume('BTC'))
+        await exchange_list[0].update_account_balances()
         self.loops_completed = 0
         while True:
             self.loops_completed += 1
             await asyncio.sleep(1)
-            self.bids = [e.get_bid(self.symbol) for e in self.exchange_list]
-            self.asks = [e.get_ask(self.symbol) for e in self.exchange_list]
-            self.current_diff = [e.get_bid(self.symbol) - self.exchange_list[0].get_ask(self.symbol)
-                                 for e in self.exchange_list]
+            self.bids = [e.get_bid(self.symbol) for e in exchange_list]
+            self.asks = [e.get_ask(self.symbol) for e in exchange_list]
+            self.current_diff = [e.get_bid(self.symbol) - exchange_list[0].get_ask(self.symbol)
+                                 for e in exchange_list]
             self.avg_diff = [self.avg_diff[e] * ((self.loops_completed - 1) / self.loops_completed) \
-                             + self.current_diff[e] / self.loops_completed for e in range(0, len(self.exchange_list))]
-            self.disc_list = [self.current_diff[e] - self.avg_diff[e] for e in range(0, len(self.exchange_list))]
+                             + self.current_diff[e] / self.loops_completed for e in range(0, len(exchange_list))]
+            self.disc_list = [self.current_diff[e] - self.avg_diff[e] for e in range(0, len(exchange_list))]
             if 0.0 in self.bids:
                 self.loops_completed -= 1
                 await asyncio.sleep(1)
@@ -130,11 +129,18 @@ class Investor:
                       f"{self.loops_completed} data collection loops completed. "
                       f"{self.invest_checks_completed} invest checks completed...\n"
                       f"Bids: {self.bids}\n"
-                      f"Current holdings. {self.symbol}: {self.exchange_list[0].holdings[self.symbol]}, "
-                      f"USDT: {self.exchange_list[0].holdings['USDT']}\n"
+                      f"Current holdings. {self.symbol}: {exchange_list[0].holdings[self.symbol]}, "
+                      f"USDT: {exchange_list[0].holdings['USDT']}\n"
                       f"Attempted buys: {self.attempted_buys}")
-                await self.exchange_list[0].update_account_balances()
+                await exchange_list[0].update_account_balances()
             await self.invest()
+
+    async def invest_waiter(self, event):
+        """Waits for market update event to be set, and then calls invest function when there is a market update"""
+        while True:
+            await event.wait()
+            await self.invest()
+            event.clear()
 
     async def invest(self):
         if self.buy_order_active or len(self.active_sell_orders) > 0:
@@ -143,20 +149,20 @@ class Investor:
         buy_disc_count = 0
         sell_disc_count = 0
         for d in self.disc_list:
-            if d > self.exchange_list[0].get_ask(self.symbol) * self.buy_disc:
+            if d > exchange_list[0].get_ask(self.symbol) * self.buy_disc:
                 buy_disc_count += 1
-            elif d < self.exchange_list[0].get_bid(self.symbol) * self.sell_disc:
+            elif d < exchange_list[0].get_bid(self.symbol) * self.sell_disc:
                 sell_disc_count += 1
         if self.verbose_logging:
             print(f"{self.symbol}: {[round(d, 2) for d in self.disc_list]} {self.invest_checks_completed}")
-        if self.loops_completed > self.calibration_loops and buy_disc_count >= len(self.exchange_list) - 1 \
-                and self.exchange_list[0].holdings['USDT'] > 10:
-            await self.exchange_list[0].buy_market(self.symbol)
+        if self.loops_completed > self.calibration_loops and buy_disc_count >= len(exchange_list) - 1 \
+                and exchange_list[0].holdings['USDT'] > 10:
+            await exchange_list[0].buy_market(self.symbol)
             self.buy_order_active = True
             await asyncio.sleep(.2)
             self.buy_order_active = False
-        if sell_disc_count >= len(self.exchange_list) - 2:
-            order_id = await self.exchange_list[0].sell_market(self.symbol)
+        if sell_disc_count >= len(exchange_list) - 2:
+            order_id = await exchange_list[0].sell_market(self.symbol)
             if order_id is not None:
                 self.active_sell_orders.append(order_id)
 
@@ -170,7 +176,7 @@ class Investor:
             await asyncio.sleep(10)
             for order in orders_to_cancel:
                 try:
-                    await self.exchange_list[0].cancel_order(self.symbol, int(order))
+                    await exchange_list[0].cancel_order(self.symbol, int(order))
                     print(f"{self.symbol} order cancelled. Order ID: {order}")
                 except Exception as e:
                     print(f"Unable to cancel sell order: {e}")
@@ -186,7 +192,12 @@ async def start_websockets(exchange, loop):
 
 
 if __name__ == "__main__":
-    symbols_to_trade = ["BTC"]
+    testnet = False
+    update_event = asyncio.Event()
+    symbols_to_trade = ["BTC", "ETH"]
+    exchange_list = [Binance(symbols_to_trade, update_event, testnet=testnet),
+                     Hitbtc(symbols_to_trade, update_event),
+                     KuCoin(symbols_to_trade, update_event)]
     investors = dict()
     loop = asyncio.get_event_loop()
     coros = list()
@@ -194,9 +205,11 @@ if __name__ == "__main__":
         investors[symbol] = Investor(symbol=symbol,
                                      calibration_time=10000,
                                      timestep=0.5, buy_disc=0.001, sell_disc=0,
-                                     verbose_logging=False, testnet=False)
-        coros.append(asyncio.gather(*[start_websockets(e, loop) for e in investors[symbol].exchange_list],
-                                    investors[symbol].get_market_data(), investors[symbol].cancel_sell_orders()))
+                                     verbose_logging=True, testnet=testnet)
+        coros.append(asyncio.gather(*[start_websockets(e, loop) for e in exchange_list],
+                                    investors[symbol].invest_waiter(update_event),
+                                    investors[symbol].get_market_data(),
+                                    investors[symbol].cancel_sell_orders()))
     results = asyncio.gather(*coros)
     loop.run_until_complete(results)
     loop.close()
