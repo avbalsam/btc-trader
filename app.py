@@ -71,7 +71,7 @@ def data():
     body += "<br><br>"
     for filename in os.listdir("./outputs/"):
         body += f"<img src='/make-plot/{filename}'>"
-    #body += f"<p>Total profit so far: {investors['BTC'].exchange_list[0].get_profit('BTC')}</p>"
+    body += f"<p>Total profit so far: ${investors['BTC'].total_profit}</p>"
     return f'''
         <html><body>
         {body}
@@ -159,6 +159,7 @@ class Investor:
         self.avg_diff = [e.get_bid(symbol) - exchange_list[0].get_ask(symbol) for e in exchange_list]
         self.loops_completed = 0
         self.invest_checks_completed = 0
+        self.total_profit = 0
 
     def get_symbol(self):
         return self.symbol
@@ -172,6 +173,7 @@ class Investor:
         # print(await exchange_list[0].get_volume('BTC'))
         await exchange_list[0].update_account_balances()
         self.loops_completed = 0
+        self.total_profit = await exchange_list[0].get_profit("BTC")
         while True:
             self.loops_completed += 1
             await asyncio.sleep(1)
@@ -183,6 +185,8 @@ class Investor:
                 continue
             if self.verbose_logging:
                 print(f"App: {self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
+            if self.loops_completed % 250 == 0:
+                self.total_profit = await exchange_list[0].get_profit("BTC")
             if self.loops_completed % 30 == 0:
                 await exchange_list[0].update_account_balances()
                 if self.loops_completed > self.calibration_loops:
@@ -190,7 +194,7 @@ class Investor:
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
                 write_to_csv(f'bid_data_{self.symbol}', self.fields, self.historical_bids)
                 write_to_csv(f'diffs_data_{self.symbol}', self.fields, self.diff_lists)
-                self.historical_bids = [[e.get_bid(symbol)] for e in exchange_list]
+                self.historical_bids = [[] for e in exchange_list]
                 self.diff_lists = [[e.get_bid(symbol) - exchange_list[0].get_ask(symbol)]
                                    for e in exchange_list]
             for e in range(0, len(exchange_list)):
