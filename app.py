@@ -59,9 +59,9 @@ def plot_png(filename):
 @app.route("/")
 def data():
     body = f"<p>Loops completed so far: {investors['BTC'].loops_completed}" \
-           f"<p>Current account balances. USDT: {investors['BTC'].exchange_list[0].holdings['USDT']}, " \
-           f"BTC: {investors['BTC'].exchange_list[0].holdings['BTC']}, " \
-           f"ETH: {investors['ETH'].exchange_list[0].holdings['ETH']}</p><br>"
+           f"<p>Current account balances. USDT: {exchange_list[0].holdings['USDT']}, " \
+           f"BTC: {exchange_list[0].holdings['BTC']}, " \
+           f"ETH: {exchange_list[0].holdings['ETH']}</p><br>"
     for symbol in symbols_to_trade:
         body += f"<p>Current exchange discrepancies: {investors[symbol].get_current_disc()}</p>" \
                 f"<p>Avg diff: {investors[symbol].avg_diff}</p><br>"
@@ -71,7 +71,7 @@ def data():
     body += "<br><br>"
     for filename in os.listdir("./outputs/"):
         body += f"<img src='/make-plot/{filename}'>"
-    body += f"<p>Total profit so far: {investors['BTC'].exchange_list[0].get_profit('BTC')}</p>"
+    #body += f"<p>Total profit so far: {investors['BTC'].exchange_list[0].get_profit('BTC')}</p>"
     return f'''
         <html><body>
         {body}
@@ -152,12 +152,11 @@ class Investor:
         self.calibration_loops = round(calibration_time / timestep)
         self.buy_disc = buy_disc
         self.verbose_logging = verbose_logging
-        self.exchange_list = [Binance(self, testnet=testnet), Hitbtc(self), KuCoin(self)]
 
-        self.historical_bids = [[e.get_bid(symbol)] for e in self.exchange_list]
-        self.fields = [e.name for e in self.exchange_list]
-        self.diff_lists = [[e.get_bid(symbol) - self.exchange_list[0].get_bid(symbol)] for e in self.exchange_list]
-        self.avg_diff = [e.get_bid(symbol) - self.exchange_list[0].get_ask(symbol) for e in self.exchange_list]
+        self.historical_bids = [[e.get_bid(symbol)] for e in exchange_list]
+        self.fields = [e.name for e in exchange_list]
+        self.diff_lists = [[e.get_bid(symbol) - exchange_list[0].get_bid(symbol)] for e in exchange_list]
+        self.avg_diff = [e.get_bid(symbol) - exchange_list[0].get_ask(symbol) for e in exchange_list]
         self.loops_completed = 0
         self.invest_checks_completed = 0
 
@@ -168,15 +167,15 @@ class Investor:
         return [diff[-1] for diff in self.diff_lists]
 
     async def get_market_data(self):
-        # print(await self.exchange_list[0].get_profit('BTC', commission=.00075))
-        # print(await self.exchange_list[0].print_trades('BTC'))
-        # print(await self.exchange_list[0].get_volume('BTC'))
-        await self.exchange_list[0].update_account_balances()
+        # print(await exchange_list[0].get_profit('BTC', commission=.00075))
+        # print(await exchange_list[0].print_trades('BTC'))
+        # print(await exchange_list[0].get_volume('BTC'))
+        await exchange_list[0].update_account_balances()
         self.loops_completed = 0
         while True:
             self.loops_completed += 1
             await asyncio.sleep(1)
-            bids = [e.get_bid(self.symbol) for e in self.exchange_list]
+            bids = [e.get_bid(self.symbol) for e in exchange_list]
             if 0.0 in bids:
                 self.loops_completed -= 1
                 await asyncio.sleep(1)
@@ -185,19 +184,19 @@ class Investor:
             if self.verbose_logging:
                 print(f"App: {self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
             if self.loops_completed % 30 == 0:
-                await self.exchange_list[0].update_account_balances()
+                await exchange_list[0].update_account_balances()
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
                 write_to_csv(f'bid_data_{self.symbol}', self.fields, self.historical_bids)
                 write_to_csv(f'diffs_data_{self.symbol}', self.fields, self.diff_lists)
-                self.historical_bids = [[e.get_bid(symbol)] for e in self.exchange_list]
-                self.diff_lists = [[e.get_bid(symbol) - self.exchange_list[0].get_ask(symbol)]
-                                   for e in self.exchange_list]
-            for e in range(0, len(self.exchange_list)):
-                self.historical_bids[e].append(self.exchange_list[e].get_bid(self.symbol))
+                self.historical_bids = [[e.get_bid(symbol)] for e in exchange_list]
+                self.diff_lists = [[e.get_bid(symbol) - exchange_list[0].get_ask(symbol)]
+                                   for e in exchange_list]
+            for e in range(0, len(exchange_list)):
+                self.historical_bids[e].append(exchange_list[e].get_bid(self.symbol))
                 self.diff_lists[e].append(
-                    self.exchange_list[e].get_bid(self.symbol) - self.exchange_list[0].get_ask(self.symbol))
+                    exchange_list[e].get_bid(self.symbol) - exchange_list[0].get_ask(self.symbol))
                 self.avg_diff[e] = self.avg_diff[e] * ((self.loops_completed - 1) / self.loops_completed) \
                                    + self.diff_lists[e][-1] / self.loops_completed
 
@@ -223,7 +222,12 @@ if __name__ == "__main__":
         os.mkdir("./outputs/")
     app_thread = threading.Thread(target=run_app)
     app_thread.start()
+    update_event = asyncio.Event()
     symbols_to_trade = ["BTC", "ETH"]
+    testnet = False
+    exchange_list = [Binance(symbols_to_trade, update_event, testnet=testnet),
+                     Hitbtc(symbols_to_trade, update_event),
+                     KuCoin(symbols_to_trade, update_event)]
     investors = dict()
     loop = asyncio.get_event_loop()
     coros = list()
@@ -232,7 +236,7 @@ if __name__ == "__main__":
                                      calibration_time=10000,
                                      timestep=0.5, buy_disc=0.0013,
                                      verbose_logging=True, testnet=False)
-        coros.append(asyncio.gather(*[start_websockets(e, loop) for e in investors[symbol].exchange_list],
+        coros.append(asyncio.gather(*[start_websockets(e, loop) for e in exchange_list],
                                     investors[symbol].get_market_data()))
     results = asyncio.gather(*coros)
     loop.run_until_complete(results)
