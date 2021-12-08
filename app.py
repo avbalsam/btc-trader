@@ -71,6 +71,7 @@ def data():
     body += "<br><br>"
     for filename in os.listdir("./outputs/"):
         body += f"<img src='/make-plot/{filename}'>"
+    body += f"<p>Total profit so far: {investors['BTC'].exchange_list[0].get_profit('BTC')}</p>"
     return f'''
         <html><body>
         {body}
