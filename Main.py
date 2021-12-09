@@ -204,7 +204,7 @@ if __name__ == "__main__":
     for symbol in symbols_to_trade:
         investors[symbol] = Investor(symbol=symbol,
                                      calibration_time=10000,
-                                     timestep=0.5, buy_disc=0.001, sell_disc=0,
+                                     timestep=0.5, buy_disc=0.0015, sell_disc=0,
                                      verbose_logging=True, testnet=testnet)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in exchange_list],
                                     investors[symbol].invest_waiter(update_event),
