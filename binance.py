@@ -12,6 +12,7 @@ from cryptoxlib.Pair import Pair
 from cryptoxlib.version_conversions import async_run
 
 from exchange import Exchange
+from symbol import Symbol
 
 
 def truncate(n: float, decimals=0):
@@ -40,7 +41,7 @@ class Binance(Exchange):
             self.client = CryptoXLib.create_binance_client(self.api_key, self.sec_key)
 
         self.client.compose_subscriptions([
-            DepthSubscription(pair=Pair(symbol, "USDT"), callbacks=[self.orderbook_ticker_update])
+            DepthSubscription(pair=Pair(symbol.get_name(), "USDT"), callbacks=[self.orderbook_ticker_update])
             for symbol in symbols_to_trade
         ])
 
@@ -57,56 +58,57 @@ class Binance(Exchange):
                 self.holdings[symbol] = float(quantity)
             print(f"Callback account update: {assets}")
 
-    async def buy_market(self, symbol: str):
+    async def buy_market(self, symbol: Symbol):
         """Buys crypto at market price"""
         usdt_amt = float(self.holdings['USDT'])
-        btc_value = (usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol)
-        btc_value = truncate(btc_value - 0.0001, 4)
-        print(f"Buy amt: {btc_value}")
-        expected_buy_price = truncate(self.get_ask(symbol), 2)
-        if btc_value >= 0.0011:
+        crypto_value = (usdt_amt - usdt_amt * self.commission) / self.get_ask(symbol)
+        crypto_value = truncate(crypto_value - symbol.get_min_order_size(), symbol.get_min_precision() - 1)
+        print(f"Buy amt: {crypto_value}")
+        expected_buy_price = truncate(self.get_ask(symbol), symbol.get_min_precision())
+        if crypto_value >= symbol.get_min_order_size() and usdt_amt > 10:
             # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
             # buy_price = truncate(float(response["response"]["askPrice"]), 5)
             try:
-                response = await self.client.create_order(Pair(symbol, "USDT"), side=enums.OrderSide.BUY,
+                response = await self.client.create_order(Pair(symbol.get_name(), "USDT"), side=enums.OrderSide.BUY,
                                                           type=enums.OrderType.LIMIT,
-                                                          quantity=str(btc_value), price=str(expected_buy_price),
+                                                          quantity=str(crypto_value), price=str(expected_buy_price),
                                                           time_in_force=TimeInForce.IMMEDIATE_OR_CANCELLED,
                                                           new_order_response_type=enums.OrderResponseType.FULL)
                 order_id = response['response']['orderId']
-                print(f"Buying {btc_value} {symbol} for {expected_buy_price} per {symbol}. "
-                      f"{symbol} value of current USDT balance: {btc_value}. Order ID: {order_id}")
+                print(f"Buying {crypto_value} {symbol.get_name()} for {expected_buy_price} per {symbol.get_name()}. "
+                      f"{symbol.get_name()} value of current USDT balance: {crypto_value}. Order ID: {order_id}")
                 return order_id
             except Exception as e:
-                print(f"Error while buying {symbol}: {e}")
+                print(f"Error while buying {symbol.get_name()}: {e}")
         else:
-            print(f"Insufficient account balance to perform {symbol} buy of {btc_value} {symbol}. "
-                  f"Total {symbol} value of USDT balance: {btc_value}")
+            print(f"Insufficient account balance to perform {symbol.get_name()} buy of {crypto_value} {symbol.get_name()}. "
+                  f"Total {symbol.get_name()} value of USDT balance: {crypto_value}")
 
-    async def sell_market(self, symbol: str):
+    async def sell_market(self, symbol: Symbol):
         """Attempts to sell all bitcoin at market price"""
-        btc_amt = float(self.holdings[symbol])
-        if btc_amt < 0.001:
-            return
-        # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
-        # sell_price = str(truncate(float(response["response"]["bidPrice"]), 5))
-        sell_price = str(truncate(self.get_bid(symbol), 2))
-        print(f"Sell price: {sell_price}")
-        sell_amt = str(truncate(btc_amt, 4))
-        try:
-            response = await self.client.create_order(Pair(symbol, "USDT"), side=enums.OrderSide.SELL,
-                                                      type=enums.OrderType.LIMIT,
-                                                      quantity=sell_amt, price=sell_price,
-                                                      time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
-                                                      new_order_response_type=enums.OrderResponseType.FULL)
-            order_id = response['response']['orderId']
-            print(f"Selling {sell_amt} {symbol} for {sell_price} per {symbol}. Total amount sold: {sell_amt}")
-            return order_id
-        except Exception as e:
-            print(f"Error while selling {symbol}: {e}")
+        crypto_amt = float(self.holdings[symbol.get_name()])
+        usdt_value = crypto_amt * self.get_bid(symbol)
+        if crypto_amt < symbol.get_min_order_size() and usdt_value > 10.0:
+            # response = await self.client.get_orderbook_ticker(pair=Pair("BTC", "USDT"))
+            # sell_price = str(truncate(float(response["response"]["bidPrice"]), 5))
+            sell_price = str(truncate(self.get_bid(symbol), symbol.get_min_precision() - 1))
+            print(f"Sell price: {sell_price}")
+            sell_amt = str(truncate(crypto_amt, symbol.get_min_precision() - 1))
+            try:
+                response = await self.client.create_order(Pair(symbol.get_name(), "USDT"), side=enums.OrderSide.SELL,
+                                                          type=enums.OrderType.LIMIT,
+                                                          quantity=sell_amt, price=sell_price,
+                                                          time_in_force=TimeInForce.GOOD_TILL_CANCELLED,
+                                                          new_order_response_type=enums.OrderResponseType.FULL)
+                order_id = response['response']['orderId']
+                print(f"Selling {sell_amt} {symbol.get_name()} for {sell_price} per {symbol.get_name()}. "
+                      f"Total amount sold: {sell_amt}")
+                return order_id
+            except Exception as e:
+                print(f"Error while selling {symbol.get_name()}: {e}")
 
-    async def cancel_order(self, symbol: str, order_id: int) -> None:
-        await self.client.cancel_order(pair=Pair(symbol, "USDT"), order_id=str(order_id))
+    async def cancel_order(self, symbol: Symbol, order_id: int) -> None:
+        await self.client.cancel_order(pair=Pair(symbol.get_name(), "USDT"), order_id=str(order_id))
 
     async def update_account_balances(self) -> None:
         """Updates self.holdings based on balances in client account"""
@@ -148,7 +150,7 @@ class Binance(Exchange):
         except KeyError:
             print(f"Out: [{response}]")
 
-    async def get_account_trades(self, symbol: str) -> list:
+    async def get_account_trades(self, symbol: Symbol) -> list:
         """Gets all account trades in nicely formatted dictionary
 
         Args:
@@ -159,7 +161,7 @@ class Binance(Exchange):
         from_id = 0
         all_trades = list()
         while True:
-            trades_from_id = await self.client.get_account_trades(pair=Pair(symbol, 'USDT'), limit=1000,
+            trades_from_id = await self.client.get_account_trades(pair=Pair(symbol.get_name(), 'USDT'), limit=1000,
                                                                   from_id=from_id)
             trades_from_id = trades_from_id['response']
             trades_formatted_from_id = list()
@@ -180,7 +182,7 @@ class Binance(Exchange):
                     all_trades.append(trade)
                 from_id = trades_formatted_from_id[-1]['id'] + 1
 
-    async def print_trades(self, symbol: str) -> None:
+    async def print_trades(self, symbol: Symbol) -> None:
         """Prints all trades made by account
 
         Args:
@@ -190,12 +192,12 @@ class Binance(Exchange):
             print(trade)
         print(len(trades))
 
-    async def get_profit(self, symbol: str, commission=0.00075) -> float:
+    async def get_profit(self, symbol: Symbol, commission=0.00075) -> float:
         """Returns total profit taking commission into account. This may take time if best_bid
         has not been generated yet.
 
         Args:
-            symbol (str): Symbol pair to calculate profit for.
+            symbol (Symbol): Symbol to calculate profit for.
             commission (float): commission charged on given transactions.
 
         Returns:
@@ -222,9 +224,9 @@ class Binance(Exchange):
         total_profit = usdt_bal + btc_bal * self.get_bid(symbol)
         return total_profit
 
-    async def get_volume(self, symbol: str) -> float:
+    async def get_volume(self, symbol: Symbol) -> float:
         total_usdt_traded = float()
-        trades = await self.get_account_trades(symbol)
+        trades = await self.get_account_trades(symbol.get_name())
         for trade in trades:
             total_usdt_traded += trade['quote_qty']
         return total_usdt_traded

@@ -3,6 +3,7 @@ import csv
 import shutil
 import threading
 import time
+import requests
 import logging
 import os
 
@@ -20,6 +21,8 @@ from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 from matplotlib.figure import Figure
 import io
 import numpy as np
+
+from symbol import Symbol
 
 plt.rcParams['figure.figsize'] = [7.50, 3.50]
 plt.rcParams['figure.autolayout'] = True
@@ -63,8 +66,8 @@ def data():
            f"BTC: {exchange_list[0].holdings['BTC']}, " \
            f"ETH: {exchange_list[0].holdings['ETH']}</p><br>"
     for symbol in symbols_to_trade:
-        body += f"<p>Current exchange discrepancies: {investors[symbol].get_current_disc()}</p>" \
-                f"<p>Avg diff: {investors[symbol].avg_diff}</p><br>"
+        body += f"<p>{symbol.get_name()} current exchange discrepancies: {investors[symbol.get_name()].get_current_disc()}</p>" \
+                f"<p>Avg diff: {investors[symbol.get_name()].avg_diff}</p><br>"
     for filename in os.listdir("./outputs/"):
         body += f"<a href='/get_data_csv/{filename}'>{filename.replace('_', ' ')}</a><br>" \
                 f"<a href='/make-plot/{filename}'>{filename.replace('_', ' ')} -- Plot data</a><br><br>"
@@ -136,7 +139,7 @@ def write_to_csv(filename, fields, data):
 
 
 class Investor:
-    def __init__(self, symbol: str, calibration_time: int, timestep: float, buy_disc: float, verbose_logging=False,
+    def __init__(self, symbol: Symbol, calibration_time: int, timestep: float, buy_disc: float, verbose_logging=False,
                  testnet=False):
         """Initializes an instance of Investor class
 
@@ -173,7 +176,7 @@ class Investor:
         # print(await exchange_list[0].get_volume('BTC'))
         await exchange_list[0].update_account_balances()
         self.loops_completed = 0
-        self.total_profit = await exchange_list[0].get_profit("BTC")
+        self.total_profit = await exchange_list[0].get_profit(self.symbol)
         while True:
             self.loops_completed += 1
             await asyncio.sleep(1)
@@ -186,16 +189,16 @@ class Investor:
             if self.verbose_logging:
                 print(f"App: {self.symbol}: {time.ctime()} {bids} {self.loops_completed}")
             if self.loops_completed % 250 == 0:
-                self.total_profit = await exchange_list[0].get_profit("BTC")
+                self.total_profit = await exchange_list[0].get_profit(self.symbol)
             if self.loops_completed % 30 == 0:
                 await exchange_list[0].update_account_balances()
                 if self.loops_completed > self.calibration_loops:
                     self.historical_bids = self.historical_bids[-self.calibration_loops:]
                     self.diff_lists = self.diff_lists[-self.calibration_loops:]
-                write_to_csv(f'bid_data_{self.symbol}', self.fields, self.historical_bids)
-                write_to_csv(f'diffs_data_{self.symbol}', self.fields, self.diff_lists)
+                write_to_csv(f'bid_data_{self.symbol.get_name()}', self.fields, self.historical_bids)
+                write_to_csv(f'diffs_data_{self.symbol.get_name()}', self.fields, self.diff_lists)
                 self.historical_bids = [[] for e in exchange_list]
-                self.diff_lists = [[e.get_bid(symbol) - exchange_list[0].get_ask(symbol)]
+                self.diff_lists = [[e.get_bid(self.symbol) - exchange_list[0].get_ask(self.symbol)]
                                    for e in exchange_list]
             for e in range(0, len(exchange_list)):
                 self.historical_bids[e].append(exchange_list[e].get_bid(self.symbol))
@@ -227,8 +230,34 @@ if __name__ == "__main__":
     app_thread = threading.Thread(target=run_app)
     app_thread.start()
     update_event = asyncio.Event()
-    symbols_to_trade = ["BTC", "ETH"]
     testnet = False
+    symbols_to_trade = list()
+    symbol_names_to_trade = ["BTC", "ETH", "LTC", "EOS", "BCH", "TRX", "ETC", "XLM"]
+
+    # Gets important information about symbol pairs with api call
+    symbol_params = "%5B"
+    for name in symbol_names_to_trade:
+        symbol_params += f"%22{name}USDT%22,"
+    symbol_params = symbol_params[:-1]
+    symbol_params += "%5D"
+    r = requests.get(f"https://api.binance.com/api/v3/exchangeInfo?symbols={symbol_params}")
+    response = r.json()
+    print(response)
+    for symbol in response["symbols"]:
+        min_precision = None
+        min_buy_amt = None
+        for f in symbol['filters']:
+            if f['filterType'] == 'LOT_SIZE':
+                min_precision = f['minQty'].index("1") - 1
+                if min_precision < 0:
+                    min_precision = 0
+                min_buy_amt = f['minQty']
+        if min_precision is None or min_buy_amt is None:
+            exit(400)
+        symbols_to_trade.append(
+            Symbol(name=symbol['baseAsset'], min_precision=min_precision, min_order_size=min_buy_amt))
+    for s in symbols_to_trade:
+        print(s)
     exchange_list = [Binance(symbols_to_trade, update_event, testnet=testnet),
                      Hitbtc(symbols_to_trade, update_event),
                      KuCoin(symbols_to_trade, update_event)]
@@ -236,12 +265,11 @@ if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     coros = list()
     for symbol in symbols_to_trade:
-        investors[symbol] = Investor(symbol=symbol,
-                                     calibration_time=10000,
-                                     timestep=0.5, buy_disc=0.0013,
-                                     verbose_logging=True, testnet=False)
+        investors[symbol.get_name()] = Investor(symbol=symbol,
+                                                calibration_time=10000,
+                                                timestep=0.5, buy_disc=0.0025, verbose_logging=False, testnet=testnet)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in exchange_list],
-                                    investors[symbol].get_market_data()))
+                                    investors[symbol.get_name()].get_market_data()))
     results = asyncio.gather(*coros)
     loop.run_until_complete(results)
     loop.close()

@@ -23,7 +23,7 @@ class KuCoin(Exchange):
     async def start_websockets(self, loop):
         ksm = await KucoinSocketManager.create(loop, self.client, self.order_book_update)
         for symbol in self.symbols_to_trade:
-            await ksm.subscribe(f'/market/ticker:{symbol}-USDT')
+            await ksm.subscribe(f'/market/ticker:{symbol.get_name()}-USDT')
 
     async def order_book_update(self, msg):
         # print(f"Callback order book update: {msg}")

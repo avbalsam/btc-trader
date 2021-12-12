@@ -19,7 +19,7 @@ class Hitbtc(Exchange):
 
         # Bundle several subscriptions into a single websocket
         self.client.compose_subscriptions([
-            TickerSubscription(pair=Pair(symbol, "USD"), callbacks=[self.order_book_update])
+            TickerSubscription(pair=Pair(symbol.get_name(), "USD"), callbacks=[self.order_book_update])
             for symbol in symbols_to_trade
         ])
 
