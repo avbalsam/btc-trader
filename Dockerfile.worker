@@ -20,7 +20,7 @@ COPY exchange.py .
 
 RUN true
 
-COPY symbol.py
+COPY symbol.py .
 
 RUN true
 
