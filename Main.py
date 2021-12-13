@@ -5,7 +5,6 @@ import threading
 import time
 import logging
 import os
-import requests
 
 from binance import Binance
 from hitbtc import Hitbtc
@@ -16,7 +15,7 @@ import csv
 import os
 import numpy as np
 
-from symbol import Symbol
+from symbol import Symbol, convert_to_symbol
 
 
 def read_csv(filename):
@@ -202,31 +201,10 @@ async def start_websockets(exchange, loop):
 if __name__ == "__main__":
     testnet = False
     update_event = asyncio.Event()
-    symbols_to_trade = list()
-    symbol_names_to_trade = ["BTC", "ETH", "LTC", "EOS", "BCH", "TRX", "ETC", "XLM"]
+    symbol_names_to_trade = ["BTC", "ETH"]
 
     # Gets important information about symbol pairs with api call
-    symbol_params = "%5B"
-    for name in symbol_names_to_trade:
-        symbol_params += f"%22{name}USDT%22,"
-    symbol_params = symbol_params[:-1]
-    symbol_params += "%5D"
-    r = requests.get(f"https://api.binance.com/api/v3/exchangeInfo?symbols={symbol_params}")
-    response = r.json()
-    print(response)
-    for symbol in response["symbols"]:
-        min_precision = None
-        min_buy_amt = None
-        for f in symbol['filters']:
-            if f['filterType'] == 'LOT_SIZE':
-                min_precision = f['minQty'].index("1") - 1
-                if min_precision < 0:
-                    min_precision = 0
-                min_buy_amt = f['minQty']
-        if min_precision is None or min_buy_amt is None:
-            exit(400)
-        symbols_to_trade.append(
-            Symbol(name=symbol['baseAsset'], min_precision=min_precision, min_order_size=min_buy_amt))
+    symbols_to_trade = convert_to_symbol(symbol_names_to_trade)
     for s in symbols_to_trade:
         print(s)
     exchange_list = [Binance(symbols_to_trade, update_event, testnet=testnet),
@@ -237,9 +215,9 @@ if __name__ == "__main__":
     coros = list()
     for symbol in symbols_to_trade:
         investors[symbol.get_name()] = Investor(symbol=symbol,
-                                     calibration_time=10000,
-                                     timestep=0.5, buy_disc=0.0025, sell_disc=0,
-                                     verbose_logging=False, testnet=testnet)
+                                                calibration_time=10000,
+                                                timestep=0.5, buy_disc=0.0025, sell_disc=0,
+                                                verbose_logging=False, testnet=testnet)
         coros.append(asyncio.gather(*[start_websockets(e, loop) for e in exchange_list],
                                     investors[symbol.get_name()].invest_waiter(update_event),
                                     investors[symbol.get_name()].get_market_data(),
